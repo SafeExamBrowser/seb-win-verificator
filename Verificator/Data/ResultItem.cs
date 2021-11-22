@@ -6,11 +6,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-using System.Windows;
-
-namespace Verificator
+namespace Verificator.Data
 {
-	public partial class App : Application
+	internal class ResultItem
 	{
+		public string Path { get; set; }
+		public string Remarks { get; set; }
+		public ResultItemStatus Status { get; set; }
+		public string Type { get; set; }
 	}
 }

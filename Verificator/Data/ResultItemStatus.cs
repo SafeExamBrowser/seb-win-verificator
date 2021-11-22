@@ -6,11 +6,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-using System.Windows;
-
-namespace Verificator
+namespace Verificator.Data
 {
-	public partial class App : Application
+	internal enum ResultItemStatus
 	{
+		Added,
+		Changed,
+		Missing,
+		OK
 	}
 }

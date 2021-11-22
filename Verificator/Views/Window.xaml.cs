@@ -6,11 +6,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-using System.Windows;
+using Verificator.Data;
 
-namespace Verificator
+namespace Verificator.Views
 {
-	public partial class App : Application
+	public partial class Window : System.Windows.Window
 	{
+		public Window()
+		{
+			InitializeComponent();
+			DataContext = new WindowViewModel(new Repository());
+		}
 	}
 }

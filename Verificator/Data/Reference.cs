@@ -6,11 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-using System.Windows;
-
-namespace Verificator
+namespace Verificator.Data
 {
-	public partial class App : Application
+	internal class Reference
 	{
+		public string Version { get; set; }
+		public string Source { get; set; }
+		public string Info { get; set; }
 	}
 }

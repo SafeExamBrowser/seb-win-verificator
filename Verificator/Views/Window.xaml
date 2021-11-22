@@ -1,0 +1,146 @@
+﻿<Window x:Class="Verificator.Views.Window"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:l="clr-namespace:Verificator.Data"
+        mc:Ignorable="d" Icon="../Resources/SafeExamBrowser.ico" Title="{Binding Title}" Height="650" Width="800" MinHeight="400" MinWidth="650" WindowStartupLocation="CenterScreen">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="ContentRendered">
+            <i:InvokeCommandAction x:Name="ContentRenderedCommand" Command="{Binding ContentRenderedCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" FontWeight="Bold" Padding="5,0" TextAlignment="Right" VerticalAlignment="Center">Available References:</TextBlock>
+            <ContentPresenter Grid.Row="0" Grid.Column="1" Content="{Binding}">
+                <ContentPresenter.ContentTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <ListView Name="ReferencesView" BorderThickness="0" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding References}" VerticalAlignment="Center">
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderBrush" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="Focusable" Value="False" />
+                                        <Setter Property="Margin" Value="0,0,20,0" />
+                                        <Setter Property="Padding" Value="0" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <WrapPanel ToolTip="{Binding Info}">
+                                            <TextBlock Text="Version " />
+                                            <TextBlock Text="{Binding Version}" />
+                                        </WrapPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                            <TextBlock Name="ReferencesMessage" Text="{Binding ReferencesEmptyMessage}" VerticalAlignment="Center" Visibility="Collapsed" />
+                        </Grid>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding References.Count}" Value="0">
+                                <Setter TargetName="ReferencesView" Property="Visibility" Value="Collapsed" />
+                                <Setter TargetName="ReferencesMessage" Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ContentPresenter.ContentTemplate>
+            </ContentPresenter>
+            <WrapPanel Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center">
+                <Button Command="{Binding AddReferenceCommand}" Template="{StaticResource ImageButton}">
+                    <fa:ImageAwesome Icon="PlusSquareOutline" />
+                </Button>
+            </WrapPanel>
+            <TextBlock Grid.Row="1" Grid.Column="0" FontWeight="Bold" Padding="5,0" TextAlignment="Right" VerticalAlignment="Center">Installation Path:</TextBlock>
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding InstallationPath}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            <WrapPanel Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center">
+                <Button Command="{Binding ChangeInstallationPathCommand}" Template="{StaticResource ImageButton}">
+                    <fa:ImageAwesome Icon="Edit" />
+                </Button>
+            </WrapPanel>
+            <WrapPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="10">
+                <Button Command="{Binding VerifyCommand}" Template="{StaticResource Button}">Verify</Button>
+            </WrapPanel>
+        </Grid>
+        <Grid Grid.Row="1">
+            <ListView Background="WhiteSmoke" BorderThickness="0" ItemsSource="{Binding Results}" HorizontalContentAlignment="Stretch">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListViewItem}">
+                        <Setter Property="TextBlock.Foreground" Value="Red" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Status}" Value="{x:Static l:ResultItemStatus.OK}">
+                                <Setter Property="TextBlock.Foreground" Value="Green" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <fa:ImageAwesome Foreground="Red" Height="15" HorizontalAlignment="Center" Icon="Warning">
+                                        <fa:ImageAwesome.Style>
+                                            <Style TargetType="fa:ImageAwesome">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="{x:Static l:ResultItemStatus.OK}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </fa:ImageAwesome.Style>
+                                    </fa:ImageAwesome>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Status">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock HorizontalAlignment="Center" Text="{Binding Status}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="FontWeight" Value="Bold" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="{x:Static l:ResultItemStatus.OK}">
+                                                        <Setter Property="FontWeight" Value="Normal" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" />
+                        <GridViewColumn Header="Path" DisplayMemberBinding="{Binding Path}" />
+                        <GridViewColumn Header="Remarks" DisplayMemberBinding="{Binding Remarks}" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </Grid>
+    </Grid>
+</Window>
