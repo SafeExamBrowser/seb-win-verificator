@@ -8,11 +8,10 @@
 
 namespace Verificator.Data
 {
-	internal class ResultItem
+	internal class Installation
 	{
-		public string Path { get; set; }
-		public string Remarks { get; set; }
-		public ResultItemStatus Status { get; set; }
-		public ResultItemType Type { get; set; }
+		public string Info { get; set; }
+		public InstallationFolder Root { get; set; }
+		public string Version { get; set; }
 	}
 }

@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+using System.Collections.Specialized;
 using Verificator.Data;
 
 namespace Verificator.Views
@@ -14,8 +15,18 @@ namespace Verificator.Views
 	{
 		public Window()
 		{
+			var viewModel = new WindowViewModel(new Algorithm(), new Dialog(), new Repository());
+
 			InitializeComponent();
-			DataContext = new WindowViewModel(new Repository());
+
+			DataContext = viewModel;
+			viewModel.Results.CollectionChanged += Results_CollectionChanged;
+		}
+
+		private void Results_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			ResultListView.Items.MoveCurrentToLast();
+			ResultListView.ScrollIntoView(ResultListView.Items.CurrentItem);
 		}
 	}
 }

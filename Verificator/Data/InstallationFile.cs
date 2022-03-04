@@ -8,10 +8,10 @@
 
 namespace Verificator.Data
 {
-	internal class Reference
+	internal class InstallationFile
 	{
-		public string Version { get; set; }
-		public string Source { get; set; }
-		public string Info { get; set; }
+		internal string Path { get; set; }
+		internal long Size { get; set; }
+		internal string Version { get; set; }
 	}
 }

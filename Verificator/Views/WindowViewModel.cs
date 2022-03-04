@@ -6,11 +6,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Reflection;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
 using Prism.Commands;
 using Verificator.Data;
 
@@ -18,59 +21,63 @@ namespace Verificator.Views
 {
 	internal class WindowViewModel : INotifyPropertyChanged
 	{
-		private static readonly string VERSION = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-
+		private readonly Algorithm algorithm;
+		private readonly Dialog dialog;
 		private readonly Repository repository;
 
-		private string ip, rem;
+		private string a, b;
+		private Cursor c;
+
+		public Cursor Cursor
+		{
+			get { return c; }
+			set { Set(ref c, value); }
+		}
 
 		public string InstallationPath
 		{
-			get { return ip; }
-			set { Set(ref ip, value); }
+			get { return a; }
+			set { Set(ref a, value); }
 		}
 
 		public string ReferencesEmptyMessage
 		{
-			get { return rem; }
-			set { Set(ref rem, value); }
+			get { return b; }
+			set { Set(ref b, value); }
 		}
 
-		public bool CanAddReference { get; set; }
 		public bool CanChangePath { get; set; }
+		public bool CanLoadReference { get; set; }
+		public bool CanGenerateReference { get; set; }
 		public bool CanVerify { get; set; }
-		public string Title => $"SEB {nameof(Verificator)} - Version {VERSION}";
+		public string Title => $"SEB {nameof(Verificator)} - Version {Repository.VERSION}";
 
-		public ObservableCollection<Reference> References { get; private set; }
+		public ObservableCollection<Installation> References { get; private set; }
 		public ObservableCollection<ResultItem> Results { get; private set; }
 
-		public DelegateCommand AddReferenceCommand { get; private set; }
 		public DelegateCommand ChangeInstallationPathCommand { get; private set; }
 		public DelegateCommand ContentRenderedCommand { get; private set; }
+		public DelegateCommand ExitCommand { get; private set; }
+		public DelegateCommand GenerateReferenceCommand { get; private set; }
+		public DelegateCommand LoadReferenceCommand { get; private set; }
 		public DelegateCommand VerifyCommand { get; private set; }
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		public WindowViewModel(Repository repository)
+		public WindowViewModel(Algorithm algorithm, Dialog dialog, Repository repository)
 		{
+			this.algorithm = algorithm;
+			this.dialog = dialog;
 			this.repository = repository;
 
-			AddReferenceCommand = new DelegateCommand(AddReference, () => CanAddReference);
 			ChangeInstallationPathCommand = new DelegateCommand(ChangeInstallationPath, () => CanChangePath);
 			ContentRenderedCommand = new DelegateCommand(Initialize);
-			References = new ObservableCollection<Reference>();
+			ExitCommand = new DelegateCommand(() => Application.Current.Shutdown());
+			GenerateReferenceCommand = new DelegateCommand(GenerateReference, () => CanGenerateReference);
+			LoadReferenceCommand = new DelegateCommand(LoadReference, () => CanLoadReference);
+			References = new ObservableCollection<Installation>();
 			Results = new ObservableCollection<ResultItem>();
 			VerifyCommand = new DelegateCommand(Verify, () => CanVerify);
-		}
-
-		private void AddReference()
-		{
-			// TODO
-			// var file = dialog.SelectFile();
-			// if (repository.TryLoadReference(file))
-			// {
-				
-			// }
 		}
 
 		private void ChangeInstallationPath()
@@ -80,49 +87,103 @@ namespace Verificator.Views
 			// InstallationPath = path;
 		}
 
+		private void GenerateReference()
+		{
+			try
+			{
+				var reference = algorithm.GenerateReference(InstallationPath);
+				// TODO: Show dialog to select path! var path = repository.Save(reference);
+
+				References.Add(reference);
+
+				// dialog.ShowMessage($"File successfully saved as '{path}'.");
+				UpdateCanVerify();
+			}
+			catch (Exception e)
+			{
+				dialog.ShowError($"Failed to generate reference for '{InstallationPath}'!", e);
+			}
+		}
+
 		private void Initialize()
 		{
-			var referencesTask = Task.Run(() =>
+			var referencesTask = Task.Run(new Action(SearchReferences));
+			var pathTask = Task.Run(new Action(SearchInstallationPath));
+
+			pathTask.ContinueWith((_) => referencesTask.ContinueWith((__) => UpdateCanVerify()));
+		}
+
+		private void LoadReference()
+		{
+			// TODO
+			// var file = dialog.SelectFile();
+			// if (repository.TryLoadReference(file))
+			// {
+
+			// }
+		}
+
+		private void SearchReferences()
+		{
+			ReferencesEmptyMessage = "Loading...";
+
+			foreach (var reference in repository.SearchReferences())
 			{
-				ReferencesEmptyMessage = "Loading...";
+				Application.Current.Dispatcher.Invoke(() => References.Add(reference));
+			}
 
-				foreach (var reference in repository.SearchReferences())
-				{
-					System.Windows.Application.Current.Dispatcher.Invoke(() => References.Add(reference));
-				}
+			CanLoadReference = true;
+			LoadReferenceCommand.RaiseCanExecuteChanged();
+			ReferencesEmptyMessage = "Could not find any installation references!";
+		}
 
-				CanAddReference = true;
-				AddReferenceCommand.RaiseCanExecuteChanged();
-				ReferencesEmptyMessage = "Could not find any installation references!";
-			});
+		private void SearchInstallationPath()
+		{
+			InstallationPath = "Searching...";
 
-			var pathTask = Task.Run(() =>
+			if (repository.TrySearchInstallationPath(out var path))
 			{
-				InstallationPath = "Searching...";
-
-				if (repository.TrySearchInstallationPath(out var path))
-				{
-					InstallationPath = path;
-				}
-				else
-				{
-					InstallationPath = "Could not find a Safe Exam Browser installation!";
-				}
-
-				CanChangePath = true;
-				ChangeInstallationPathCommand.RaiseCanExecuteChanged();
-			});
-
-			pathTask.ContinueWith((_) => referencesTask.ContinueWith((__) =>
+				InstallationPath = path;
+				CanGenerateReference = true;
+				GenerateReferenceCommand.RaiseCanExecuteChanged();
+			}
+			else
 			{
-				CanVerify = true;
-				VerifyCommand.RaiseCanExecuteChanged();
-			}));
+				InstallationPath = "Could not find a Safe Exam Browser installation!";
+			}
+
+			CanChangePath = true;
+			ChangeInstallationPathCommand.RaiseCanExecuteChanged();
+		}
+
+		private void UpdateCanVerify()
+		{
+			CanVerify = References.Count > 0 && Directory.Exists(InstallationPath);
+			VerifyCommand.RaiseCanExecuteChanged();
 		}
 
 		private void Verify()
 		{
-			// TODO
+			Results.Clear();
+			Cursor = Cursors.Wait;
+
+			try
+			{
+				var results = algorithm.Verify(InstallationPath, References);
+
+				foreach (var item in results)
+				{
+					Results.Add(item);
+				}
+
+				dialog.ShowMessage($"Finished verification of '{InstallationPath}'.");
+			}
+			catch (Exception e)
+			{
+				dialog.ShowError($"Failed to verify '{InstallationPath}'!", e);
+			}
+
+			Cursor = Cursors.Arrow;
 		}
 
 		private void Set<T>(ref T property, T value, [CallerMemberName] string propertyName = null)
