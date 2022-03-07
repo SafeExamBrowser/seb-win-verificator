@@ -7,10 +7,13 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -89,20 +92,39 @@ namespace Verificator.Views
 
 		private void GenerateReference()
 		{
-			try
-			{
-				var reference = algorithm.GenerateReference(InstallationPath);
-				// TODO: Show dialog to select path! var path = repository.Save(reference);
+			var progress = new Progress { Cursor = Cursors.Wait, Owner = Application.Current.MainWindow };
 
-				References.Add(reference);
-
-				// dialog.ShowMessage($"File successfully saved as '{path}'.");
-				UpdateCanVerify();
-			}
-			catch (Exception e)
+			Task.Run(() =>
 			{
-				dialog.ShowError($"Failed to generate reference for '{InstallationPath}'!", e);
-			}
+				Cursor = Cursors.Wait;
+				Task.Run(() => Application.Current.Dispatcher.Invoke(() => progress.ShowDialog()));
+
+				try
+				{
+					var reference = algorithm.GenerateReference(InstallationPath);
+					// TODO: Show dialog to select path! var path = repository.Save(reference);
+
+					Application.Current.Dispatcher.Invoke(() =>
+					{
+						if (References.All(r => r.Version != reference.Version))
+						{
+							References.Add(reference);
+						}
+					});
+
+					Application.Current.Dispatcher.Invoke(() => progress.Close());
+					Cursor = Cursors.Arrow;
+
+					// dialog.ShowMessage($"File successfully saved as '{path}'.");
+					UpdateCanVerify();
+				}
+				catch (Exception e)
+				{
+					Application.Current.Dispatcher.Invoke(() => progress.Close());
+					Cursor = Cursors.Arrow;
+					dialog.ShowError($"Failed to generate reference for '{InstallationPath}'!", e);
+				}
+			});
 		}
 
 		private void Initialize()
@@ -164,26 +186,52 @@ namespace Verificator.Views
 
 		private void Verify()
 		{
-			Results.Clear();
-			Cursor = Cursors.Wait;
+			var progress = new Progress { Cursor = Cursors.Wait, Owner = Application.Current.MainWindow };
 
-			try
+			Task.Run(() =>
 			{
-				var results = algorithm.Verify(InstallationPath, References);
+				Cursor = Cursors.Wait;
+				Task.Run(() => Application.Current.Dispatcher.Invoke(() => progress.ShowDialog()));
 
-				foreach (var item in results)
+				Application.Current.Dispatcher.Invoke(() => Results.Clear());
+
+				try
 				{
-					Results.Add(item);
+					var results = algorithm.Verify(InstallationPath, References);
+					var tampered = new List<ResultItem>();
+
+					foreach (var item in results)
+					{
+						Application.Current.Dispatcher.Invoke(() => Results.Add(item));
+
+						if (item.Status != ResultItemStatus.OK)
+						{
+							tampered.Add(item);
+						}
+
+						// Looks like we need to let the UI thread catch up before we can continue...
+						Thread.Sleep(1);
+					}
+
+					Application.Current.Dispatcher.Invoke(() => progress.Close());
+					Cursor = Cursors.Arrow;
+
+					if (tampered.Any())
+					{
+						dialog.ShowError($"Verification finished, {tampered.Count} of {results.Count()} items are not okay!");
+					}
+					else
+					{
+						dialog.ShowMessage($"Verification finished, all {results.Count()} items are okay.");
+					}
 				}
-
-				dialog.ShowMessage($"Finished verification of '{InstallationPath}'.");
-			}
-			catch (Exception e)
-			{
-				dialog.ShowError($"Failed to verify '{InstallationPath}'!", e);
-			}
-
-			Cursor = Cursors.Arrow;
+				catch (Exception e)
+				{
+					Application.Current.Dispatcher.Invoke(() => progress.Close());
+					Cursor = Cursors.Arrow;
+					dialog.ShowError($"Failed to verify '{InstallationPath}'!", e);
+				}
+			});
 		}
 
 		private void Set<T>(ref T property, T value, [CallerMemberName] string propertyName = null)

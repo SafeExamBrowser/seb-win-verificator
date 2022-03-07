@@ -6,12 +6,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-namespace Verificator.Data
+namespace Verificator.Views
 {
-	internal class InstallationFile
+	public partial class Progress : System.Windows.Window
 	{
-		internal string Path { get; set; }
-		internal long Size { get; set; }
-		internal string Version { get; set; }
+		public Progress()
+		{
+			InitializeComponent();
+		}
 	}
 }

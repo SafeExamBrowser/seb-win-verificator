@@ -11,7 +11,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using Verificator.Data;
+using File = Verificator.Data.File;
 
 namespace Verificator
 {
@@ -19,9 +21,9 @@ namespace Verificator
 	{
 		internal Installation GenerateReference(string path)
 		{
+			var mainExecutable = GetMainExecutable(path);
 			var root = new DirectoryInfo(path);
 			var reference = new Installation();
-			var mainExecutable = GetMainExecutable(path);
 
 			reference.Info = $"Generated at {DateTime.Now}";
 			reference.Root = AnalyzeDirectory(root, root.FullName);
@@ -49,9 +51,9 @@ namespace Verificator
 			}
 		}
 
-		private InstallationFolder AnalyzeDirectory(DirectoryInfo directory, string rootPath)
+		private Folder AnalyzeDirectory(DirectoryInfo directory, string rootPath)
 		{
-			var folder = new InstallationFolder
+			var folder = new Folder
 			{
 				Path = directory.FullName.Replace(rootPath, "")
 			};
@@ -63,29 +65,35 @@ namespace Verificator
 
 			foreach (var file in directory.GetFiles())
 			{
-				folder.Add(new InstallationFile
+				var checksum = default(string);
+				var versionInfo = FileVersionInfo.GetVersionInfo(file.FullName);
+
+				using (var stream = System.IO.File.OpenRead(file.FullName))
+				using (var algorithm = new SHA256Managed())
 				{
-					// TODO: Checksum = ,
-					// TODO: OriginalName = ,
+					checksum = BitConverter.ToString(algorithm.ComputeHash(stream)).Replace("-", string.Empty);
+				}
+
+				folder.Add(new File
+				{
+					Checksum = checksum,
+					OriginalName = versionInfo.OriginalFilename,
 					Path = file.FullName.Replace(rootPath, ""),
 					// TODO: Signature = new X509Certificate2(file.FullName).,
 					Size = file.Length,
-					Version = FileVersionInfo.GetVersionInfo(file.FullName).FileVersion
+					Version = versionInfo.FileVersion
 				});
 			}
 
 			return folder;
 		}
 
-		private string GetMainExecutable(string rootPath)
+		private IEnumerable<ResultItem> Compare(Folder installed, Folder reference)
 		{
-			return Path.Combine(rootPath, "Application", "SafeExamBrowser.exe");
-		}
-
-		private IEnumerable<ResultItem> Compare(InstallationFolder installed, InstallationFolder reference)
-		{
-			var installedFolders = installed.Folders;
-			var installedFiles = installed.Files;
+			var installedFolders = installed?.Folders ?? new List<Folder>();
+			var installedFiles = installed?.Files ?? new List<File>();
+			var referenceFolders = reference?.Folders ?? new List<Folder>();
+			var referenceFiles = reference?.Files ?? new List<File>();
 			var status = installed == default ? ResultItemStatus.Missing : (reference == default ? ResultItemStatus.Added : ResultItemStatus.OK);
 
 			yield return new ResultItem
@@ -96,7 +104,7 @@ namespace Verificator
 				Type = ResultItemType.Folder
 			};
 
-			foreach (var referenceFolder in reference?.Folders)
+			foreach (var referenceFolder in referenceFolders)
 			{
 				var installedFolder = installedFolders.FirstOrDefault(f => f.Path.Equals(referenceFolder.Path, StringComparison.OrdinalIgnoreCase));
 
@@ -116,7 +124,7 @@ namespace Verificator
 				}
 			}
 
-			foreach (var referenceFile in reference?.Files)
+			foreach (var referenceFile in referenceFiles)
 			{
 				var installedFile = installedFiles.FirstOrDefault(f => f.Path.Equals(referenceFile.Path, StringComparison.OrdinalIgnoreCase));
 
@@ -131,38 +139,64 @@ namespace Verificator
 			}
 		}
 
-		private ResultItem Compare(InstallationFile installed, InstallationFile reference)
+		private ResultItem Compare(File installed, File reference)
 		{
-			var details = default(string);
+			var details = "";
 			var status = installed == default ? ResultItemStatus.Missing : (reference == default ? ResultItemStatus.Added : ResultItemStatus.OK);
 
 			if (installed != default && reference != default)
 			{
-				// TODO: Validate!!
-				status = ResultItemStatus.Changed;
+				if (!installed.Checksum.Equals(reference.Checksum, StringComparison.OrdinalIgnoreCase))
+				{
+					details += $"Checksum '{installed.Checksum}' is not '{reference.Checksum}'! ";
+					status = ResultItemStatus.Changed;
+				}
+
+				if (installed.OriginalName?.Equals(reference.OriginalName, StringComparison.OrdinalIgnoreCase) == false)
+				{
+					details += $"Original name '{installed.OriginalName}' is not '{reference.OriginalName}'! ";
+					status = ResultItemStatus.Changed;
+				}
+
+				if (installed.Size != reference.Size)
+				{
+					details += $"Size '{installed.Size}' is not '{reference.Size}'! ";
+					status = ResultItemStatus.Changed;
+				}
+
+				if (installed.Version?.Equals(reference.Version, StringComparison.OrdinalIgnoreCase) == false)
+				{
+					details += $"Version '{installed.Version}' is not '{reference.Version}'! ";
+					status = ResultItemStatus.Changed;
+				}
 			}
 
 			return new ResultItem
 			{
 				Path = installed?.Path ?? reference.Path,
-				Remarks = BuildRemarks(ResultItemType.Folder, status, details),
+				Remarks = BuildRemarks(ResultItemType.File, status, details),
 				Status = status,
 				Type = ResultItemType.File
 			};
 		}
 
+		private string GetMainExecutable(string rootPath)
+		{
+			return Path.Combine(rootPath, "Application", "SafeExamBrowser.exe");
+		}
+
 		private string BuildRemarks(ResultItemType type, ResultItemStatus status, string details = default)
 		{
-			var itemName = type == ResultItemType.File ? "file" : "folder";
+			var item = type == ResultItemType.File ? "file" : "folder";
 
 			switch (status)
 			{
 				case ResultItemStatus.Added:
-					return $"This {itemName} has been added!";
+					return $"This {item} has been added!";
 				case ResultItemStatus.Changed:
-					return $"This {itemName} has been changed! {details}";
+					return $"This {item} has been changed! {details}";
 				case ResultItemStatus.Missing:
-					return $"This {itemName} is missing!";
+					return $"This {item} is missing!";
 				default:
 					return "";
 			}

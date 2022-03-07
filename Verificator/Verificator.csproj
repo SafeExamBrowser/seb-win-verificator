@@ -81,6 +81,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Progress.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Window.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -90,14 +94,17 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Data\Installation.cs" />
-    <Compile Include="Data\InstallationFile.cs" />
-    <Compile Include="Data\InstallationFolder.cs" />
+    <Compile Include="Data\File.cs" />
+    <Compile Include="Data\Folder.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="Data\ResultItem.cs" />
     <Compile Include="Data\ResultItemStatus.cs" />
     <Compile Include="Data\ResultItemType.cs" />
     <Compile Include="Algorithm.cs" />
     <Compile Include="Views\Dialog.cs" />
+    <Compile Include="Views\Progress.xaml.cs">
+      <DependentUpon>Progress.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\WindowViewModel.cs" />
     <Compile Include="Views\Window.xaml.cs">
       <DependentUpon>Window.xaml</DependentUpon>

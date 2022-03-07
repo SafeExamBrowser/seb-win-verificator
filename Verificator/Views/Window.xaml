@@ -130,12 +130,15 @@
                         <GridViewColumn Width="Auto">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <fa:ImageAwesome Foreground="Red" Height="15" HorizontalAlignment="Center" Icon="Warning">
+                                    <fa:ImageAwesome Height="15" HorizontalAlignment="Center">
                                         <fa:ImageAwesome.Style>
                                             <Style TargetType="fa:ImageAwesome">
+                                                <Setter Property="Foreground" Value="Red" />
+                                                <Setter Property="Icon" Value="Warning" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Status}" Value="{x:Static l:ResultItemStatus.OK}">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                        <Setter Property="Foreground" Value="Green" />
+                                                        <Setter Property="Icon" Value="CheckCircle" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -144,7 +147,7 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Status" Width="Auto">
+                        <GridViewColumn Header="Status" Width="75">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock HorizontalAlignment="Center" Text="{Binding Status}">
@@ -162,9 +165,30 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" Width="Auto" />
-                        <GridViewColumn Header="Path" DisplayMemberBinding="{Binding Path}" Width="400" />
-                        <GridViewColumn Header="Remarks" DisplayMemberBinding="{Binding Remarks}" Width="200" />
+                        <GridViewColumn Header="Type" Width="Auto">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <fa:ImageAwesome Height="15" HorizontalAlignment="Center" ToolTip="{Binding Type}">
+                                        <fa:ImageAwesome.Style>
+                                            <Style TargetType="fa:ImageAwesome">
+                                                <Setter Property="Icon" Value="FolderOutlinepenOutline" />
+                                                <Setter Property="Foreground" Value="Red" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="{x:Static l:ResultItemStatus.OK}">
+                                                        <Setter Property="Foreground" Value="Green" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Type}" Value="{x:Static l:ResultItemType.File}">
+                                                        <Setter Property="Icon" Value="FileOutline" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </fa:ImageAwesome.Style>
+                                    </fa:ImageAwesome>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Path" DisplayMemberBinding="{Binding Path}" Width="350" />
+                        <GridViewColumn Header="Remarks" DisplayMemberBinding="{Binding Remarks}" Width="250" />
                     </GridView>
                 </ListView.View>
             </ListView>

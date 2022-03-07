@@ -15,7 +15,7 @@ namespace Verificator.Views
 	{
 		internal void ShowError(string message, string title = "Error")
 		{
-			MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+			MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
 		}
 
 		internal void ShowError(string message, Exception e, string title = "Error")

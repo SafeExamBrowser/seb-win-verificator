@@ -8,10 +8,12 @@
 
 namespace Verificator.Data
 {
-	internal class Installation
+	internal class File
 	{
-		public string Info { get; set; }
-		public Folder Root { get; set; }
-		public string Version { get; set; }
+		internal string Checksum { get; set; }
+		internal string OriginalName { get; set; }
+		internal string Path { get; set; }
+		internal long Size { get; set; }
+		internal string Version { get; set; }
 	}
 }
