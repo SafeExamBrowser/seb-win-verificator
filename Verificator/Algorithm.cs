@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Verificator.Data;
 using File = Verificator.Data.File;
 
@@ -66,6 +67,7 @@ namespace Verificator
 			foreach (var file in directory.GetFiles())
 			{
 				var checksum = default(string);
+				var signature = default(string);
 				var versionInfo = FileVersionInfo.GetVersionInfo(file.FullName);
 
 				using (var stream = System.IO.File.OpenRead(file.FullName))
@@ -74,12 +76,17 @@ namespace Verificator
 					checksum = BitConverter.ToString(algorithm.ComputeHash(stream)).Replace("-", string.Empty);
 				}
 
+				if (file.Extension.Equals(".exe", StringComparison.OrdinalIgnoreCase) || file.Extension.Equals(".dll", StringComparison.OrdinalIgnoreCase))
+				{
+					signature = new X509Certificate2(file.FullName).GetCertHashString();
+				}
+
 				folder.Add(new File
 				{
 					Checksum = checksum,
 					OriginalName = versionInfo.OriginalFilename,
 					Path = file.FullName.Replace(rootPath, ""),
-					// TODO: Signature = new X509Certificate2(file.FullName).,
+					Signature = signature,
 					Size = file.Length,
 					Version = versionInfo.FileVersion
 				});
@@ -146,25 +153,31 @@ namespace Verificator
 
 			if (installed != default && reference != default)
 			{
-				if (!installed.Checksum.Equals(reference.Checksum, StringComparison.OrdinalIgnoreCase))
+				if (!reference.Checksum.Equals(installed.Checksum, StringComparison.OrdinalIgnoreCase))
 				{
 					details += $"Checksum '{installed.Checksum}' is not '{reference.Checksum}'! ";
 					status = ResultItemStatus.Changed;
 				}
 
-				if (installed.OriginalName?.Equals(reference.OriginalName, StringComparison.OrdinalIgnoreCase) == false)
+				if (reference.OriginalName?.Equals(installed.OriginalName, StringComparison.OrdinalIgnoreCase) == false)
 				{
 					details += $"Original name '{installed.OriginalName}' is not '{reference.OriginalName}'! ";
 					status = ResultItemStatus.Changed;
 				}
 
-				if (installed.Size != reference.Size)
+				if (reference.Signature?.Equals(installed.Signature, StringComparison.OrdinalIgnoreCase) == false)
+				{
+					details += $"Signature '{installed.Signature}' is not '{reference.Signature}'! ";
+					status = ResultItemStatus.Changed;
+				}
+
+				if (reference.Size != installed.Size)
 				{
 					details += $"Size '{installed.Size}' is not '{reference.Size}'! ";
 					status = ResultItemStatus.Changed;
 				}
 
-				if (installed.Version?.Equals(reference.Version, StringComparison.OrdinalIgnoreCase) == false)
+				if (reference.Version?.Equals(installed.Version, StringComparison.OrdinalIgnoreCase) == false)
 				{
 					details += $"Version '{installed.Version}' is not '{reference.Version}'! ";
 					status = ResultItemStatus.Changed;

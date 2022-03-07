@@ -13,6 +13,7 @@ namespace Verificator.Data
 		internal string Checksum { get; set; }
 		internal string OriginalName { get; set; }
 		internal string Path { get; set; }
+		internal string Signature { get; set; }
 		internal long Size { get; set; }
 		internal string Version { get; set; }
 	}

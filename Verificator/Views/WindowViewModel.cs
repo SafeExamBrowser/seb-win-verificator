@@ -102,7 +102,8 @@ namespace Verificator.Views
 				try
 				{
 					var reference = algorithm.GenerateReference(InstallationPath);
-					// TODO: Show dialog to select path! var path = repository.Save(reference);
+					// TODO: Show dialog to select path!
+					// var path = repository.Save(reference);
 
 					Application.Current.Dispatcher.Invoke(() =>
 					{
