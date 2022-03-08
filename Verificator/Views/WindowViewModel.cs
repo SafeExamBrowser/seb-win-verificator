@@ -85,14 +85,21 @@ namespace Verificator.Views
 
 		private void ChangeInstallationPath()
 		{
-			// TODO
-			// var path = dialog.SelectFolder();
-			// InstallationPath = path;
+			if (dialog.TrySelectDirectory(out var path, "Select installation directory...") && repository.IsValidInstallationPath(path))
+			{
+				InstallationPath = path;
+				CanGenerateReference = true;
+				GenerateReferenceCommand.RaiseCanExecuteChanged();
+			}
+			else if (path != default)
+			{
+				dialog.ShowError($"The selected directory '{path}' does not contain a Safe Exam Browser installation!");
+			}
 		}
 
 		private void GenerateReference()
 		{
-			var progress = new Progress { Cursor = Cursors.Wait, Owner = Application.Current.MainWindow };
+			var progress = new Progress { Owner = Application.Current.MainWindow };
 
 			Task.Run(() =>
 			{
@@ -102,8 +109,6 @@ namespace Verificator.Views
 				try
 				{
 					var reference = algorithm.GenerateReference(InstallationPath);
-					// TODO: Show dialog to select path!
-					// var path = repository.Save(reference);
 
 					Application.Current.Dispatcher.Invoke(() =>
 					{
@@ -111,13 +116,18 @@ namespace Verificator.Views
 						{
 							References.Add(reference);
 						}
+
+						progress.Close();
+
+						if (dialog.TrySelectDirectory(out var path, "Save reference under..."))
+						{
+							path = repository.Save(reference, path);
+							dialog.ShowMessage($"Reference successfully saved as '{path}'.");
+						}
 					});
 
-					Application.Current.Dispatcher.Invoke(() => progress.Close());
-					Cursor = Cursors.Arrow;
-
-					// dialog.ShowMessage($"File successfully saved as '{path}'.");
 					UpdateCanVerify();
+					Cursor = Cursors.Arrow;
 				}
 				catch (Exception e)
 				{
@@ -138,12 +148,24 @@ namespace Verificator.Views
 
 		private void LoadReference()
 		{
-			// TODO
-			// var file = dialog.SelectFile();
-			// if (repository.TryLoadReference(file))
-			// {
+			try
+			{
+				var success = dialog.TrySelectFile(out var path, "Please select a reference file...");
 
-			// }
+				if (success && repository.TryLoadReference(path, out var reference) && References.All(r => r.Version != reference.Version))
+				{
+					References.Add(reference);
+					UpdateCanVerify();
+				}
+				else if (path != default)
+				{
+					dialog.ShowError($"The selected file '{path}' does not contain a valid Safe Exam Browser reference!");
+				}
+			}
+			catch (Exception e)
+			{
+				dialog.ShowError($"Failed to load file '{InstallationPath}'!", e);
+			}
 		}
 
 		private void SearchReferences()

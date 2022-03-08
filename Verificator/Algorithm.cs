@@ -24,11 +24,12 @@ namespace Verificator
 		{
 			var mainExecutable = GetMainExecutable(path);
 			var root = new DirectoryInfo(path);
-			var reference = new Installation();
-
-			reference.Info = $"Generated at {DateTime.Now}";
-			reference.Root = AnalyzeDirectory(root, root.FullName);
-			reference.Version = FileVersionInfo.GetVersionInfo(mainExecutable).FileVersion;
+			var reference = new Installation
+			{
+				Info = $"Generated at {DateTime.Now}",
+				Root = AnalyzeDirectory(root, root.FullName),
+				Version = FileVersionInfo.GetVersionInfo(mainExecutable).FileVersion
+			};
 
 			return reference;
 		}
@@ -54,14 +55,11 @@ namespace Verificator
 
 		private Folder AnalyzeDirectory(DirectoryInfo directory, string rootPath)
 		{
-			var folder = new Folder
-			{
-				Path = directory.FullName.Replace(rootPath, "")
-			};
+			var folder = new Folder { Path = directory.FullName.Replace(rootPath, "") };
 
 			foreach (var subdirectory in directory.GetDirectories())
 			{
-				folder.Add(AnalyzeDirectory(subdirectory, rootPath));
+				folder.Folders.Add(AnalyzeDirectory(subdirectory, rootPath));
 			}
 
 			foreach (var file in directory.GetFiles())
@@ -81,7 +79,7 @@ namespace Verificator
 					signature = new X509Certificate2(file.FullName).GetCertHashString();
 				}
 
-				folder.Add(new File
+				folder.Files.Add(new File
 				{
 					Checksum = checksum,
 					OriginalName = versionInfo.OriginalFilename,
@@ -97,10 +95,10 @@ namespace Verificator
 
 		private IEnumerable<ResultItem> Compare(Folder installed, Folder reference)
 		{
-			var installedFolders = installed?.Folders ?? new List<Folder>();
-			var installedFiles = installed?.Files ?? new List<File>();
-			var referenceFolders = reference?.Folders ?? new List<Folder>();
-			var referenceFiles = reference?.Files ?? new List<File>();
+			var installedFolders = new List<Folder>(installed?.Folders ?? Enumerable.Empty<Folder>());
+			var installedFiles = new List<File>(installed?.Files ?? Enumerable.Empty<File>());
+			var referenceFolders = new List<Folder>(reference?.Folders ?? Enumerable.Empty<Folder>());
+			var referenceFiles = new List<File>(reference?.Files ?? Enumerable.Empty<File>());
 			var status = installed == default ? ResultItemStatus.Missing : (reference == default ? ResultItemStatus.Added : ResultItemStatus.OK);
 
 			yield return new ResultItem

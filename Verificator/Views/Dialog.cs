@@ -8,11 +8,52 @@
 
 using System;
 using System.Windows;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Verificator.Views
 {
 	internal class Dialog
 	{
+		internal bool TrySelectDirectory(out string path, string title = default)
+		{
+			var dialog = new CommonOpenFileDialog
+			{
+				EnsurePathExists = true,
+				IsFolderPicker = true,
+				Title = title
+			};
+
+			path = default;
+
+			if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+			{
+				path = dialog.FileName;
+			}
+
+			return path != default;
+		}
+
+		internal bool TrySelectFile(out string path, string title = default)
+		{
+			var dialog = new CommonOpenFileDialog
+			{
+				EnsurePathExists = true,
+				EnsureFileExists = true,
+				NavigateToShortcut = false,
+				Title = title
+			};
+
+			dialog.Filters.Add(new CommonFileDialogFilter("SEB Reference file", Repository.REFERENCE_FILE_EXTENSION));
+			path = default;
+
+			if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+			{
+				path = dialog.FileName;
+			}
+
+			return path != default;
+		}
+
 		internal void ShowError(string message, string title = "Error")
 		{
 			MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);

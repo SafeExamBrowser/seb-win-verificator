@@ -6,15 +6,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+using System;
+
 namespace Verificator.Data
 {
-	internal class File
+	[Serializable]
+	public class File
 	{
-		internal string Checksum { get; set; }
-		internal string OriginalName { get; set; }
-		internal string Path { get; set; }
-		internal string Signature { get; set; }
-		internal long Size { get; set; }
-		internal string Version { get; set; }
+		public string Checksum { get; set; }
+		public string OriginalName { get; set; }
+		public string Path { get; set; }
+		public string Signature { get; set; }
+		public long Size { get; set; }
+		public string Version { get; set; }
 	}
 }

@@ -6,9 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+using System;
+
 namespace Verificator.Data
 {
-	internal class Installation
+	[Serializable]
+	public class Installation
 	{
 		public string Info { get; set; }
 		public Folder Root { get; set; }

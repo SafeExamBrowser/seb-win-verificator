@@ -6,33 +6,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+using System;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 
 namespace Verificator.Data
 {
-	internal class Folder
+	[Serializable]
+	public class Folder
 	{
-		private readonly List<File> files;
-		private readonly List<Folder> folders;
+		public List<File> Files { get; set; }
+		public List<Folder> Folders { get; set; }
 
-		internal IList<File> Files => new List<File>(files);
-		internal IList<Folder> Folders => new List<Folder>(folders);
-		internal string Path { get; set; }
+		[XmlAttribute]
+		public string Path { get; set; }
 
-		internal Folder()
+		public Folder()
 		{
-			files = new List<File>();
-			folders = new List<Folder>();
-		}
-
-		internal void Add(File file)
-		{
-			files.Add(file);
-		}
-
-		internal void Add(Folder folder)
-		{
-			folders.Add(folder);
+			Files = new List<File>();
+			Folders = new List<Folder>();
 		}
 	}
 }

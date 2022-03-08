@@ -11,23 +11,51 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Serialization;
 using Verificator.Data;
+using File = System.IO.File;
 
 namespace Verificator
 {
 	internal class Repository
 	{
+		internal const string REFERENCE_FILE_EXTENSION = "sebref";
 		internal static readonly string VERSION = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 
-		internal string Save(Installation reference)
+		internal bool IsValidInstallationPath(string path)
 		{
-			// TODO!
-			return string.Empty;
+			return Directory.Exists(path) && Path.GetFileName(path).Equals("SafeExamBrowser", StringComparison.OrdinalIgnoreCase);
+		}
+
+		internal string Save(Installation reference, string path)
+		{
+			var filePath = Path.Combine(path, $"SEB_{reference.Version}_{DateTime.Now:yyyy-MM-dd_HH\\hmm\\mss\\s}.{REFERENCE_FILE_EXTENSION}");
+			var serializer = new XmlSerializer(typeof(Installation));
+
+			using (var stream = File.OpenWrite(filePath))
+			{
+				serializer.Serialize(stream, reference);
+			}
+
+			return filePath;
 		}
 
 		internal IEnumerable<Installation> SearchReferences()
 		{
+			// TODO
 			return Enumerable.Empty<Installation>();
+		}
+
+		internal bool TryLoadReference(string path, out Installation reference)
+		{
+			var serializer = new XmlSerializer(typeof(Installation));
+
+			using (var stream = File.OpenRead(path))
+			{
+				reference = serializer.Deserialize(stream) as Installation;
+			}
+
+			return reference != default;
 		}
 
 		internal bool TrySearchInstallationPath(out string path)
@@ -39,7 +67,7 @@ namespace Verificator
 
 			foreach (var directory in Directory.GetDirectories(programFilesX64).Concat(Directory.GetDirectories(programFilesX86)))
 			{
-				if (Path.GetFileName(directory).Equals("SafeExamBrowser", StringComparison.OrdinalIgnoreCase))
+				if (IsValidInstallationPath(directory))
 				{
 					path = directory;
 
