@@ -29,7 +29,7 @@ namespace Verificator
 
 		internal string Save(Installation reference, string path)
 		{
-			var filePath = Path.Combine(path, $"SEB_{reference.Version}_{DateTime.Now:yyyy-MM-dd_HH\\hmm\\mss\\s}.{REFERENCE_FILE_EXTENSION}");
+			var filePath = Path.Combine(path, $"SEB_{reference.Version}.{REFERENCE_FILE_EXTENSION}");
 			var serializer = new XmlSerializer(typeof(Installation));
 
 			using (var stream = File.OpenWrite(filePath))
