@@ -43,7 +43,7 @@ namespace Verificator.Views
 				Title = title
 			};
 
-			dialog.Filters.Add(new CommonFileDialogFilter("SEB Reference file", Repository.REFERENCE_FILE_EXTENSION));
+			dialog.Filters.Add(new CommonFileDialogFilter("SEB Reference File", Repository.REFERENCE_FILE_EXTENSION));
 			path = default;
 
 			if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -61,7 +61,7 @@ namespace Verificator.Views
 
 		internal void ShowError(string message, Exception e, string title = "Error")
 		{
-			ShowError($"{message}{Environment.NewLine}{Environment.NewLine}{e.Message}{Environment.NewLine}{e.StackTrace}", title);
+			ShowError($"{message} {e.Message}{Environment.NewLine}{Environment.NewLine}{e.StackTrace}", title);
 		}
 
 		internal void ShowMessage(string message, string title = "Information")

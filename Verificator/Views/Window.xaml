@@ -17,7 +17,7 @@
     </i:Interaction.Triggers>
     <Window.InputBindings>
         <KeyBinding Key="F4" Modifiers="Alt" Command="{Binding ExitCommand}" />
-        <KeyBinding Key="C" Modifiers="Ctrl" Command="{Binding ChangeInstallationPathCommand}" />
+        <KeyBinding Key="C" Modifiers="Ctrl" Command="{Binding ChangeLocalInstallationCommand}" />
         <KeyBinding Key="G" Modifiers="Ctrl" Command="{Binding GenerateReferenceCommand}" />
         <KeyBinding Key="L" Modifiers="Ctrl" Command="{Binding LoadReferenceCommand}" />
         <KeyBinding Key="V" Modifiers="Ctrl" Command="{Binding VerifyCommand}" />
@@ -33,7 +33,7 @@
                 <MenuItem Header="_Exit" Command="{Binding ExitCommand}" InputGestureText="Alt+F4" />
             </MenuItem>
             <MenuItem Header="_Actions">
-                <MenuItem Header="_Change installation path..." Command="{Binding ChangeInstallationPathCommand}" InputGestureText="Ctrl+C" />
+                <MenuItem Header="_Change local installation..." Command="{Binding ChangeLocalInstallationCommand}" InputGestureText="Ctrl+C" />
                 <MenuItem Header="_Generate reference..." Command="{Binding GenerateReferenceCommand}" InputGestureText="Ctrl+G" />
                 <MenuItem Header="_Load reference..." Command="{Binding LoadReferenceCommand}" InputGestureText="Ctrl+L" />
                 <MenuItem Header="_Verify installation..." Command="{Binding VerifyCommand}" InputGestureText="Ctrl+V" />
@@ -46,6 +46,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
+                <RowDefinition />
                 <RowDefinition />
                 <RowDefinition />
                 <RowDefinition />
@@ -76,6 +77,9 @@
                                         <WrapPanel ToolTip="{Binding Info}">
                                             <TextBlock Text="Version " />
                                             <TextBlock Text="{Binding Version}" />
+                                            <TextBlock Text=" (" />
+                                            <TextBlock Text="{Binding Platform}" />
+                                            <TextBlock Text=")" />
                                         </WrapPanel>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
@@ -92,18 +96,21 @@
                 </ContentPresenter.ContentTemplate>
             </ContentPresenter>
             <WrapPanel Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center">
-                <Button Command="{Binding LoadReferenceCommand}" Template="{StaticResource ImageButton}">
+                <Button Command="{Binding LoadReferenceCommand}" Template="{StaticResource ImageButton}" ToolTip="Load reference...">
                     <fa:ImageAwesome Icon="PlusSquareOutline" />
                 </Button>
             </WrapPanel>
-            <TextBlock Grid.Row="1" Grid.Column="0" FontWeight="Bold" Padding="5,0" TextAlignment="Right" VerticalAlignment="Center">Installation Path:</TextBlock>
-            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding InstallationPath}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="1" Grid.Column="0" FontWeight="Bold" Padding="5,0" TextAlignment="Right" VerticalAlignment="Center">Local Installation:</TextBlock>
+            <WrapPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <TextBlock Text="{Binding InstallationInfo}" />
+                <TextBlock Text="{Binding InstallationPath}" TextTrimming="CharacterEllipsis" />
+            </WrapPanel>
             <WrapPanel Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center">
-                <Button Command="{Binding ChangeInstallationPathCommand}" Template="{StaticResource ImageButton}">
+                <Button Command="{Binding ChangeLocalInstallationCommand}" Template="{StaticResource ImageButton}" ToolTip="Change local installation...">
                     <fa:ImageAwesome Icon="Edit" />
                 </Button>
             </WrapPanel>
-            <WrapPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="10">
+            <WrapPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="10">
                 <Button Command="{Binding VerifyCommand}" Template="{StaticResource Button}">Verify</Button>
             </WrapPanel>
         </Grid>
@@ -178,7 +185,7 @@
                                                         <Setter Property="Foreground" Value="Green" />
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding Type}" Value="{x:Static l:ResultItemType.File}">
-                                                        <Setter Property="Icon" Value="FileOutline" />
+                                                        <Setter Property="Icon" Value="File" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>

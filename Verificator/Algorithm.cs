@@ -22,23 +22,59 @@ namespace Verificator
 	{
 		internal Installation GenerateReference(string path)
 		{
-			var mainExecutable = GetMainExecutable(path);
 			var root = new DirectoryInfo(path);
 			var reference = new Installation
 			{
 				Info = $"Generated at {DateTime.Now}",
+				Platform = GetPlatform(path),
 				Root = AnalyzeDirectory(root, root.FullName),
-				Version = FileVersionInfo.GetVersionInfo(mainExecutable).FileVersion
+				Version = GetVersion(path)
 			};
 
 			return reference;
 		}
 
+		internal bool IsValidInstallation(string path, out Platform platform, out string version)
+		{
+			platform = default;
+			version = default;
+
+			if (Directory.Exists(path) && Path.GetFileName(path).Equals("SafeExamBrowser", StringComparison.OrdinalIgnoreCase))
+			{
+				platform = GetPlatform(path);
+				version = GetVersion(path);
+			}
+
+			return platform != default && version != default;
+		}
+
+		internal bool TrySearchInstallation(out string path, out Platform platform, out string version)
+		{
+			path = default;
+			platform = default;
+			version = default;
+
+			var programFilesX64 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+			var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+
+			foreach (var directory in Directory.GetDirectories(programFilesX64).Concat(Directory.GetDirectories(programFilesX86)))
+			{
+				if (IsValidInstallation(directory, out platform, out version))
+				{
+					path = directory;
+
+					break;
+				}
+			}
+
+			return path != default;
+		}
+
 		internal IEnumerable<ResultItem> Verify(string installationPath, IEnumerable<Installation> references)
 		{
-			var mainExecutable = GetMainExecutable(installationPath);
-			var installedVersion = FileVersionInfo.GetVersionInfo(mainExecutable).FileVersion;
-			var reference = references.FirstOrDefault(r => installedVersion.Equals(r.Version, StringComparison.OrdinalIgnoreCase));
+			var platform = GetPlatform(installationPath);
+			var version = GetVersion(installationPath);
+			var reference = references.FirstOrDefault(r => platform == r.Platform && version.Equals(r.Version, StringComparison.OrdinalIgnoreCase));
 
 			if (reference != default)
 			{
@@ -49,7 +85,7 @@ namespace Verificator
 			}
 			else
 			{
-				throw new InvalidOperationException($"No reference found for installed version {installedVersion}!");
+				throw new InvalidOperationException($"No reference found for installed version {version} ({platform})!");
 			}
 		}
 
@@ -194,6 +230,24 @@ namespace Verificator
 		private string GetMainExecutable(string rootPath)
 		{
 			return Path.Combine(rootPath, "Application", "SafeExamBrowser.exe");
+		}
+
+		private Platform GetPlatform(string rootPath)
+		{
+			if (Environment.Is64BitOperatingSystem)
+			{
+				return rootPath.Contains(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)) ? Platform.x86 : Platform.x64;
+			}
+
+			return Platform.x86;
+		}
+
+		private string GetVersion(string rootPath)
+		{
+			var mainExecutable = GetMainExecutable(rootPath);
+			var versionInfo = FileVersionInfo.GetVersionInfo(mainExecutable);
+
+			return versionInfo.FileVersion;
 		}
 
 		private string BuildRemarks(ResultItemType type, ResultItemStatus status, string details = default)

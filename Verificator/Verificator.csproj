@@ -110,6 +110,7 @@
     <Compile Include="Data\Installation.cs" />
     <Compile Include="Data\File.cs" />
     <Compile Include="Data\Folder.cs" />
+    <Compile Include="Data\Platform.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="Data\ResultItem.cs" />
     <Compile Include="Data\ResultItemStatus.cs" />

@@ -6,11 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Xml.Serialization;
 using Verificator.Data;
 using File = System.IO.File;
@@ -20,16 +18,10 @@ namespace Verificator
 	internal class Repository
 	{
 		internal const string REFERENCE_FILE_EXTENSION = "sebref";
-		internal static readonly string VERSION = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-
-		internal bool IsValidInstallationPath(string path)
-		{
-			return Directory.Exists(path) && Path.GetFileName(path).Equals("SafeExamBrowser", StringComparison.OrdinalIgnoreCase);
-		}
 
 		internal string Save(Installation reference, string path)
 		{
-			var filePath = Path.Combine(path, $"SEB_{reference.Version}.{REFERENCE_FILE_EXTENSION}");
+			var filePath = Path.Combine(path, $"SEB_{reference.Version}_{reference.Platform}.{REFERENCE_FILE_EXTENSION}");
 			var serializer = new XmlSerializer(typeof(Installation));
 
 			using (var stream = File.OpenWrite(filePath))
@@ -56,26 +48,6 @@ namespace Verificator
 			}
 
 			return reference != default;
-		}
-
-		internal bool TrySearchInstallationPath(out string path)
-		{
-			path = default;
-
-			var programFilesX64 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-			var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-
-			foreach (var directory in Directory.GetDirectories(programFilesX64).Concat(Directory.GetDirectories(programFilesX86)))
-			{
-				if (IsValidInstallationPath(directory))
-				{
-					path = directory;
-
-					break;
-				}
-			}
-
-			return path != default;
 		}
 	}
 }

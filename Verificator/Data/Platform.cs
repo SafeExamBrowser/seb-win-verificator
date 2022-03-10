@@ -11,11 +11,10 @@ using System;
 namespace Verificator.Data
 {
 	[Serializable]
-	public class Installation
+	public enum Platform
 	{
-		public string Info { get; set; }
-		public Platform Platform { get; set; }
-		public Folder Root { get; set; }
-		public string Version { get; set; }
+		Undefined,
+		x64,
+		x86
 	}
 }

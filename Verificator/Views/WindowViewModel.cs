@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,41 +25,49 @@ namespace Verificator.Views
 {
 	internal class WindowViewModel : INotifyPropertyChanged
 	{
+		private static readonly string VERSION = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+
 		private readonly Algorithm algorithm;
 		private readonly Dialog dialog;
 		private readonly Repository repository;
 
-		private string a, b;
-		private Cursor c;
+		private Cursor a;
+		private string b, c, d;
 
 		public Cursor Cursor
-		{
-			get { return c; }
-			set { Set(ref c, value); }
-		}
-
-		public string InstallationPath
 		{
 			get { return a; }
 			set { Set(ref a, value); }
 		}
 
-		public string ReferencesEmptyMessage
+		public string InstallationInfo
 		{
 			get { return b; }
 			set { Set(ref b, value); }
+		}
+
+		public string InstallationPath
+		{
+			get { return c; }
+			set { Set(ref c, value); }
+		}
+
+		public string ReferencesEmptyMessage
+		{
+			get { return d; }
+			set { Set(ref d, value); }
 		}
 
 		public bool CanChangePath { get; set; }
 		public bool CanLoadReference { get; set; }
 		public bool CanGenerateReference { get; set; }
 		public bool CanVerify { get; set; }
-		public string Title => $"SEB {nameof(Verificator)} - Version {Repository.VERSION}";
+		public string Title => $"SEB {nameof(Verificator)} - Version {VERSION}";
 
 		public ObservableCollection<Installation> References { get; private set; }
 		public ObservableCollection<ResultItem> Results { get; private set; }
 
-		public DelegateCommand ChangeInstallationPathCommand { get; private set; }
+		public DelegateCommand ChangeLocalInstallationCommand { get; private set; }
 		public DelegateCommand ContentRenderedCommand { get; private set; }
 		public DelegateCommand ExitCommand { get; private set; }
 		public DelegateCommand GenerateReferenceCommand { get; private set; }
@@ -73,7 +82,7 @@ namespace Verificator.Views
 			this.dialog = dialog;
 			this.repository = repository;
 
-			ChangeInstallationPathCommand = new DelegateCommand(ChangeInstallationPath, () => CanChangePath);
+			ChangeLocalInstallationCommand = new DelegateCommand(ChangeLocalInstallation, () => CanChangePath);
 			ContentRenderedCommand = new DelegateCommand(Initialize);
 			ExitCommand = new DelegateCommand(() => Application.Current.Shutdown());
 			GenerateReferenceCommand = new DelegateCommand(GenerateReference, () => CanGenerateReference);
@@ -83,13 +92,11 @@ namespace Verificator.Views
 			VerifyCommand = new DelegateCommand(Verify, () => CanVerify);
 		}
 
-		private void ChangeInstallationPath()
+		private void ChangeLocalInstallation()
 		{
-			if (dialog.TrySelectDirectory(out var path, "Select installation directory...") && repository.IsValidInstallationPath(path))
+			if (dialog.TrySelectDirectory(out var path, "Select installation directory...") && algorithm.IsValidInstallation(path, out var platform, out var version))
 			{
-				InstallationPath = path;
-				CanGenerateReference = true;
-				GenerateReferenceCommand.RaiseCanExecuteChanged();
+				UpdateLocalInstallation(path, platform, version);
 			}
 			else if (path != default)
 			{
@@ -140,10 +147,10 @@ namespace Verificator.Views
 
 		private void Initialize()
 		{
+			var installationTask = Task.Run(new Action(SearchInstallation));
 			var referencesTask = Task.Run(new Action(SearchReferences));
-			var pathTask = Task.Run(new Action(SearchInstallationPath));
 
-			pathTask.ContinueWith((_) => referencesTask.ContinueWith((__) => UpdateCanVerify()));
+			installationTask.ContinueWith((_) => referencesTask.ContinueWith((__) => UpdateCanVerify()));
 		}
 
 		private void LoadReference()
@@ -164,8 +171,25 @@ namespace Verificator.Views
 			}
 			catch (Exception e)
 			{
-				dialog.ShowError($"Failed to load file '{InstallationPath}'!", e);
+				dialog.ShowError($"Failed to load reference file!", e);
 			}
+		}
+
+		private void SearchInstallation()
+		{
+			InstallationInfo = "Searching...";
+
+			if (algorithm.TrySearchInstallation(out var path, out var platform, out var version))
+			{
+				UpdateLocalInstallation(path, platform, version);
+			}
+			else
+			{
+				InstallationInfo = "Could not find a Safe Exam Browser installation!";
+			}
+
+			CanChangePath = true;
+			ChangeLocalInstallationCommand.RaiseCanExecuteChanged();
 		}
 
 		private void SearchReferences()
@@ -182,29 +206,18 @@ namespace Verificator.Views
 			ReferencesEmptyMessage = "Could not find any installation references!";
 		}
 
-		private void SearchInstallationPath()
-		{
-			InstallationPath = "Searching...";
-
-			if (repository.TrySearchInstallationPath(out var path))
-			{
-				InstallationPath = path;
-				CanGenerateReference = true;
-				GenerateReferenceCommand.RaiseCanExecuteChanged();
-			}
-			else
-			{
-				InstallationPath = "Could not find a Safe Exam Browser installation!";
-			}
-
-			CanChangePath = true;
-			ChangeInstallationPathCommand.RaiseCanExecuteChanged();
-		}
-
 		private void UpdateCanVerify()
 		{
 			CanVerify = References.Count > 0 && Directory.Exists(InstallationPath);
 			VerifyCommand.RaiseCanExecuteChanged();
+		}
+
+		private void UpdateLocalInstallation(string path, Platform platform, string version)
+		{
+			InstallationInfo = $"SEB {version} ({platform}) installed at ";
+			InstallationPath = path;
+			CanGenerateReference = true;
+			GenerateReferenceCommand.RaiseCanExecuteChanged();
 		}
 
 		private void Verify()
