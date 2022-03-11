@@ -1,0 +1,25 @@
+version: '1.0.0.{build}'
+image: Windows
+configuration: Release
+platform:
+  - Any CPU
+matrix:
+  fast_finish: true
+max_jobs: 1
+assembly_info:
+  patch: true
+  file: AssemblyInfo.*
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
+  assembly_informational_version: '{version}'
+install:
+ - appveyor DownloadFile "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
+before_build:
+ - nuget restore
+build_script:
+ - msbuild /verbosity:minimal /property:langversion=latest "Verificator.sln"
+test: off
+artifacts:
+ - path: Verificator\bin\$(configuration)
+   name: 'Verificator_$(appveyor_build_version)'
+   type: zip

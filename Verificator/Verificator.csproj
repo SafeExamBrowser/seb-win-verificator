@@ -153,4 +153,20 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>setlocal enabledelayedexpansion
+set binaries=
+
+IF $(ConfigurationName)==Release (GOTO sign) ELSE (GOTO dont_sign)
+GOTO:eof
+
+:sign
+echo Signing assemblies for configuration "$(ConfigurationName)"...
+FOR /F %25%25G IN ('dir "$(TargetDir)*.exe" "$(TargetDir)*.dll" /s /b') DO set binaries=!binaries! %25%25G
+signtool sign /sm /tr http://timestamp.digicert.com /td sha256 /fd sha256 %25binaries%25
+GOTO:eof
+
+:dont_sign
+echo Not signing assemblies for configuration "$(ConfigurationName)".</PostBuildEvent>
+  </PropertyGroup>
 </Project>
