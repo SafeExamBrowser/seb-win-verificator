@@ -14,6 +14,26 @@ namespace Verificator.Views
 {
 	internal class Dialog
 	{
+		internal void ShowError(string message, string title = "Error")
+		{
+			MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+		}
+
+		internal void ShowError(string message, Exception e, string title = "Error")
+		{
+			ShowError($"{message} {e.Message}{Environment.NewLine}{Environment.NewLine}{e.StackTrace}", title);
+		}
+
+		internal void ShowMessage(string message, string title = "Information")
+		{
+			MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+		}
+
+		internal bool ShowQuestion(string message, string title = "Question")
+		{
+			return MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+		}
+
 		internal bool TrySelectDirectory(out string path, string title = default)
 		{
 			var dialog = new CommonOpenFileDialog
@@ -43,7 +63,7 @@ namespace Verificator.Views
 				Title = title
 			};
 
-			dialog.Filters.Add(new CommonFileDialogFilter("SEB Reference File", Repository.REFERENCE_FILE_EXTENSION));
+			dialog.Filters.Add(new CommonFileDialogFilter("SEB Reference File", Constants.REFERENCE_FILE_EXTENSION));
 			path = default;
 
 			if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -52,21 +72,6 @@ namespace Verificator.Views
 			}
 
 			return path != default;
-		}
-
-		internal void ShowError(string message, string title = "Error")
-		{
-			MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
-		}
-
-		internal void ShowError(string message, Exception e, string title = "Error")
-		{
-			ShowError($"{message} {e.Message}{Environment.NewLine}{Environment.NewLine}{e.StackTrace}", title);
-		}
-
-		internal void ShowMessage(string message, string title = "Information")
-		{
-			MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
 		}
 	}
 }

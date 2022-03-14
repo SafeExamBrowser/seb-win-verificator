@@ -12,7 +12,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,8 +24,6 @@ namespace Verificator.Views
 {
 	internal class WindowViewModel : INotifyPropertyChanged
 	{
-		private static readonly string VERSION = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-
 		private readonly Algorithm algorithm;
 		private readonly Dialog dialog;
 		private readonly Repository repository;
@@ -61,8 +58,9 @@ namespace Verificator.Views
 		public bool CanChangePath { get; set; }
 		public bool CanLoadReference { get; set; }
 		public bool CanGenerateReference { get; set; }
+		public bool CanRemoveReferences { get; set; }
 		public bool CanVerify { get; set; }
-		public string Title => $"SEB {nameof(Verificator)} - Version {VERSION}";
+		public string Title => $"SEB {nameof(Verificator)} - Version {Constants.VERSION}";
 
 		public ObservableCollection<Installation> References { get; private set; }
 		public ObservableCollection<ResultItem> Results { get; private set; }
@@ -72,6 +70,7 @@ namespace Verificator.Views
 		public DelegateCommand ExitCommand { get; private set; }
 		public DelegateCommand GenerateReferenceCommand { get; private set; }
 		public DelegateCommand LoadReferenceCommand { get; private set; }
+		public DelegateCommand RemoveAllReferencesCommand { get; private set; }
 		public DelegateCommand VerifyCommand { get; private set; }
 
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -88,6 +87,7 @@ namespace Verificator.Views
 			GenerateReferenceCommand = new DelegateCommand(GenerateReference, () => CanGenerateReference);
 			LoadReferenceCommand = new DelegateCommand(LoadReference, () => CanLoadReference);
 			References = new ObservableCollection<Installation>();
+			RemoveAllReferencesCommand = new DelegateCommand(RemoveAllReferences, () => CanRemoveReferences);
 			Results = new ObservableCollection<ResultItem>();
 			VerifyCommand = new DelegateCommand(Verify, () => CanVerify);
 		}
@@ -157,12 +157,17 @@ namespace Verificator.Views
 		{
 			try
 			{
-				var success = dialog.TrySelectFile(out var path, "Please select a reference file...");
-
-				if (success && repository.TryLoadReference(path, out var reference) && References.All(r => r.Version != reference.Version))
+				if (dialog.TrySelectFile(out var path, "Please select a reference file...") && repository.TryLoad(path, out var reference))
 				{
-					References.Add(reference);
-					UpdateCanVerify();
+					if (References.Any(r => r.Version == reference.Version && r.Platform == reference.Platform))
+					{
+						dialog.ShowError($"A reference for version {reference.Version} ({reference.Platform}) has already been loaded!");
+					}
+					else
+					{
+						References.Add(reference);
+						UpdateCanVerify();
+					}
 				}
 				else if (path != default)
 				{
@@ -172,6 +177,15 @@ namespace Verificator.Views
 			catch (Exception e)
 			{
 				dialog.ShowError($"Failed to load reference file!", e);
+			}
+		}
+
+		private void RemoveAllReferences()
+		{
+			if (References.Count > 0 && dialog.ShowQuestion($"Would you really like to remove all {References.Count} currently loaded references?"))
+			{
+				References.Clear();
+				UpdateCanVerify();
 			}
 		}
 
@@ -202,7 +216,9 @@ namespace Verificator.Views
 			}
 
 			CanLoadReference = true;
+			CanRemoveReferences = true;
 			LoadReferenceCommand.RaiseCanExecuteChanged();
+			RemoveAllReferencesCommand.RaiseCanExecuteChanged();
 			ReferencesEmptyMessage = "Could not find any installation references!";
 		}
 

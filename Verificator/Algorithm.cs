@@ -25,7 +25,7 @@ namespace Verificator
 			var root = new DirectoryInfo(path);
 			var reference = new Installation
 			{
-				Info = $"Generated at {DateTime.Now}",
+				Info = $"Generated at {DateTime.Now} by {nameof(Verificator)} {Constants.VERSION}",
 				Platform = GetPlatform(path),
 				Root = AnalyzeDirectory(root, root.FullName),
 				Version = GetVersion(path)
