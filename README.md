@@ -9,6 +9,14 @@ The application requires the prerequisites listed below in order to work correct
 
 * .NET Framework 4.7.2 Runtime: https://dotnet.microsoft.com/download/dotnet-framework/net472
 
+### Usage
+
+Download and extract the archive, then start the application by double-clicking `Verificator.exe`. The tool will automatically search for a Safe Exam Browser installation on the system and display the
+installation path and version information under "Local Installation" once an installation has been found.
+
+By default, the application comes with the references for all the official release versions since SEB 3.2.0 preloaded. Once there is at least one valid reference loaded and a local installation found,
+the verification of the local installation can be started. After the verification procedure has finished, the status of all elements in the local installation will be displayed in the user interface.
+
 ### Project Status
 
 **_DISCLAIMER_**\
@@ -21,11 +29,3 @@ The application requires the prerequisites listed below in order to work correct
 | Downloads       | ![GitHub All Releases](https://img.shields.io/github/downloads/safeexambrowser/seb-win-verificator/total?logo=github) | https://github.com/SafeExamBrowser/seb-win-verificator/releases |
 | Development     | ![GitHub Last Commit](https://img.shields.io/github/last-commit/safeexambrowser/seb-win-verificator?logo=github)      | n/a                                                             |
 | Repository Size | ![GitHub Repo Size](https://img.shields.io/github/repo-size/safeexambrowser/seb-win-verificator?logo=github)          | n/a                                                             |
-
-### Usage
-
-Download and extract the archive, then start the application by double-clicking `Verificator.exe`. The tool will automatically search for a Safe Exam Browser installation on the system and display the
-installation path and version information under "Local Installation" once an installation has been found.
-
-By default, the application comes with the references for all the official release versions since SEB 3.2.0 preloaded. Once there is at least one valid reference loaded and a local installation found,
-the verification of the local installation can be started. After the verification procedure has finished, the status of all elements in the local installation will be displayed in the user interface.
