@@ -11,8 +11,8 @@ The application requires the prerequisites listed below in order to work correct
 
 ## Usage
 
-Download and extract the archive, then start the application by double-clicking `Verificator.exe`. The tool will automatically search for a Safe Exam Browser installation on the system and display the
-version information and installation path under "Local Installation" once an installation has been found.
+Download and unzip the archive containing the [latest release version](https://github.com/SafeExamBrowser/seb-win-verificator/releases), then start the application by double-clicking `Verificator.exe`.
+The tool will automatically search for a Safe Exam Browser installation on the system and display the version information and installation path under "Local Installation" once an installation has been found.
 
 By default, the application comes with the references for all the official release versions since SEB 3.2.0 preloaded. Once there is at least one valid reference loaded and a local installation found,
 the verification of the local installation can be started. After the verification procedure has finished, the status of all elements in the local installation will be displayed in the user interface.
