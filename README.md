@@ -22,10 +22,10 @@ the verification of the local installation can be started. After the verificatio
 **_DISCLAIMER_**\
 **The builds linked below are for testing purposes only.** They may be unstable and should thus _never_ be used in a production environment! Always use the latest, official release version.
 
-| Aspect          | Status                                                                                                                | Details                                                         |
-| --------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Release Build   | ![Release Build Status](https://sebdev-let.ethz.ch/api/projects/status/pptmm2tt43scnj5w?svg=true)                     | https://sebdev-let.ethz.ch/project/appveyor/seb-win-verificator |
-| Issue Status    | ![GitHub Issues](https://img.shields.io/github/issues/safeexambrowser/seb-win-verificator?logo=github)                | https://github.com/SafeExamBrowser/seb-win-verificator/issues   |
-| Downloads       | ![GitHub All Releases](https://img.shields.io/github/downloads/safeexambrowser/seb-win-verificator/total?logo=github) | https://github.com/SafeExamBrowser/seb-win-verificator/releases |
-| Development     | ![GitHub Last Commit](https://img.shields.io/github/last-commit/safeexambrowser/seb-win-verificator?logo=github)      | n/a                                                             |
-| Repository Size | ![GitHub Repo Size](https://img.shields.io/github/repo-size/safeexambrowser/seb-win-verificator?logo=github)          | n/a                                                             |
+| Aspect            | Status                                                                                                                | Details                                                         |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Development Build | ![Development Build Status](https://sebdev-let.ethz.ch/api/projects/status/pptmm2tt43scnj5w?svg=true)                 | https://sebdev-let.ethz.ch/project/appveyor/seb-win-verificator |
+| Issue Status      | ![GitHub Issues](https://img.shields.io/github/issues/safeexambrowser/seb-win-verificator?logo=github)                | https://github.com/SafeExamBrowser/seb-win-verificator/issues   |
+| Downloads         | ![GitHub All Releases](https://img.shields.io/github/downloads/safeexambrowser/seb-win-verificator/total?logo=github) | https://github.com/SafeExamBrowser/seb-win-verificator/releases |
+| Development       | ![GitHub Last Commit](https://img.shields.io/github/last-commit/safeexambrowser/seb-win-verificator?logo=github)      | n/a                                                             |
+| Repository Size   | ![GitHub Repo Size](https://img.shields.io/github/repo-size/safeexambrowser/seb-win-verificator?logo=github)          | n/a                                                             |
