@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -28,31 +29,46 @@ namespace Verificator.Views
 		private readonly Dialog dialog;
 		private readonly Repository repository;
 
-		private Cursor a;
-		private string b, c, d;
+		private string configurationPath;
 
-		public Cursor Cursor
+		private bool a;
+		private Cursor c;
+		private string b, d, e, f;
+
+		public bool AutoStart
 		{
 			get { return a; }
 			set { Set(ref a, value); }
 		}
 
-		public string InstallationInfo
+		public string AutoStartInfo
 		{
 			get { return b; }
 			set { Set(ref b, value); }
 		}
 
-		public string InstallationPath
+		public Cursor Cursor
 		{
 			get { return c; }
 			set { Set(ref c, value); }
 		}
 
-		public string ReferencesEmptyMessage
+		public string InstallationInfo
 		{
 			get { return d; }
 			set { Set(ref d, value); }
+		}
+
+		public string InstallationPath
+		{
+			get { return e; }
+			set { Set(ref e, value); }
+		}
+
+		public string ReferencesEmptyMessage
+		{
+			get { return f; }
+			set { Set(ref f, value); }
 		}
 
 		public bool CanChangePath { get; set; }
@@ -150,7 +166,11 @@ namespace Verificator.Views
 			var installationTask = Task.Run(new Action(SearchInstallation));
 			var referencesTask = Task.Run(new Action(SearchReferences));
 
-			installationTask.ContinueWith((_) => referencesTask.ContinueWith((__) => UpdateCanVerify()));
+			installationTask.ContinueWith((_) => referencesTask.ContinueWith((__) =>
+			{
+				SearchConfigurationFile();
+				UpdateCanVerify();
+			}));
 		}
 
 		private void LoadReference()
@@ -189,6 +209,20 @@ namespace Verificator.Views
 			}
 		}
 
+		private void SearchConfigurationFile()
+		{
+			if (repository.TrySearchConfigurationFile(out configurationPath))
+			{
+				AutoStart = true;
+				AutoStartInfo = $"Auto-start SEB (using {Path.GetFileName(configurationPath)})";
+			}
+			else
+			{
+				AutoStart = false;
+				AutoStartInfo = "Auto-start SEB (using the local client or default configuration)";
+			}
+		}
+
 		private void SearchInstallation()
 		{
 			InstallationInfo = "Searching...";
@@ -220,6 +254,18 @@ namespace Verificator.Views
 			LoadReferenceCommand.RaiseCanExecuteChanged();
 			RemoveAllReferencesCommand.RaiseCanExecuteChanged();
 			ReferencesEmptyMessage = "Could not find any installation references!";
+		}
+
+		private void StartSafeExamBrowser()
+		{
+			var process = new Process();
+
+			process.StartInfo.Arguments = configurationPath;
+			process.StartInfo.FileName = algorithm.GetMainExecutable(InstallationPath);
+			process.StartInfo.UseShellExecute = false;
+			process.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+
+			process.Start();
 		}
 
 		private void UpdateCanVerify()
@@ -271,6 +317,11 @@ namespace Verificator.Views
 					if (tampered.Any())
 					{
 						dialog.ShowError($"Verification finished, {tampered.Count} of {results.Count()} items are not okay!");
+					}
+					else if (AutoStart)
+					{
+						StartSafeExamBrowser();
+						Application.Current.Dispatcher.Invoke(Application.Current.Shutdown);
 					}
 					else
 					{

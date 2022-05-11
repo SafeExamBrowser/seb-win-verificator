@@ -112,8 +112,11 @@
                     <fa:ImageAwesome Icon="Edit" />
                 </Button>
             </WrapPanel>
-            <WrapPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="10">
-                <Button Command="{Binding VerifyCommand}" Template="{StaticResource Button}">Verify</Button>
+            <WrapPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="10" Orientation="Vertical">
+                <CheckBox Cursor="Hand" IsChecked="{Binding AutoStart}" Margin="0,0,0,10" ToolTip="Automatically starts the local installation after successful verification using the specified configuration file" Content="{Binding AutoStartInfo}" />
+                <WrapPanel HorizontalAlignment="Center" Margin="10">
+                    <Button Command="{Binding VerifyCommand}" Template="{StaticResource Button}">Verify</Button>
+                </WrapPanel>
             </WrapPanel>
         </Grid>
         <Grid Grid.Row="2">

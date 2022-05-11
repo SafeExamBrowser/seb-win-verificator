@@ -12,7 +12,9 @@ namespace Verificator
 {
 	internal static class Constants
 	{
+		internal const string CONFIGURATION_FILE_EXTENSION = "seb";
 		internal const string REFERENCE_FILE_EXTENSION = "sebref";
+
 		internal static readonly string VERSION = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 	}
 }

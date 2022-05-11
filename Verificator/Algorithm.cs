@@ -34,6 +34,11 @@ namespace Verificator
 			return reference;
 		}
 
+		internal string GetMainExecutable(string rootPath)
+		{
+			return Path.Combine(rootPath, "Application", "SafeExamBrowser.exe");
+		}
+
 		internal bool IsValidInstallation(string path, out Platform platform, out string version)
 		{
 			platform = default;
@@ -225,11 +230,6 @@ namespace Verificator
 				Status = status,
 				Type = ResultItemType.File
 			};
-		}
-
-		private string GetMainExecutable(string rootPath)
-		{
-			return Path.Combine(rootPath, "Application", "SafeExamBrowser.exe");
 		}
 
 		private Platform GetPlatform(string rootPath)

@@ -6,8 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Xml;
 using System.Xml.Serialization;
@@ -59,6 +61,26 @@ namespace Verificator
 			}
 
 			return reference != default;
+		}
+
+		internal bool TrySearchConfigurationFile(out string path)
+		{
+			var executableDirectory = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+			var files = executableDirectory.GetFiles().Concat(executableDirectory.Parent.GetFiles());
+
+			path = default;
+
+			foreach (var file in files)
+			{
+				if (file.Extension.Equals($".{Constants.CONFIGURATION_FILE_EXTENSION}", StringComparison.OrdinalIgnoreCase))
+				{
+					path = file.FullName;
+
+					break;
+				}
+			}
+
+			return path != default;
 		}
 	}
 }
