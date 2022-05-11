@@ -17,6 +17,9 @@ The tool will automatically search for a Safe Exam Browser installation on the s
 By default, the application comes with the references for all the official release versions since SEB 3.2.0 preloaded. Once there is at least one valid reference loaded and a local installation found,
 the verification of the local installation can be started. After the verification procedure has finished, the status of all elements in the local installation will be displayed in the user interface.
 
+The application can automatically start the local SEB installation once the verification procedure has finished successfully. It will furthermore search the folder containing the main executable
+`Verificator.exe` as well as its parent directory for a SEB configuration file to use. When choosing to start SEB automatically, the application will terminate itself after SEB has been started.
+
 ## Project Status
 
 **_DISCLAIMER_**\
