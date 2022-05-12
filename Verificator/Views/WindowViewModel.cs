@@ -260,7 +260,7 @@ namespace Verificator.Views
 		{
 			var process = new Process();
 
-			process.StartInfo.Arguments = configurationPath;
+			process.StartInfo.Arguments = $"{'"' + configurationPath + '"'}";
 			process.StartInfo.FileName = algorithm.GetMainExecutable(InstallationPath);
 			process.StartInfo.UseShellExecute = false;
 			process.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
