@@ -1,7 +1,9 @@
 # SEB Verificator
 
 A standalone tool to manually verify the integrity of a Safe Exam Browser installation on Windows. This application is intended for use cases like BYOD exams where candidates have complete control over their
-systems and thus could be trying to use a manipulated build of Safe Exam Browser to perform an exam. You may use the SEB Verificator on a USB flash drive and start it from there under your supervision.
+systems and thus could be trying to use a manipulated build of Safe Exam Browser to perform an exam.
+
+You may use the SEB Verificator on a USB flash drive and start it from there under your supervision.
 Alternatively, you could make the tool downloadable on a website under your control and ask the candidate to download and execute the SEB Verificator under your supervision.
 
 ## Requirements
