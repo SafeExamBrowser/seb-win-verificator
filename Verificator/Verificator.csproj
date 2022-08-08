@@ -145,6 +145,8 @@
     <EmbeddedResource Include="References\SEB_3.3.1.388_x86.sebref" />
     <EmbeddedResource Include="References\SEB_3.3.2.413_x64.sebref" />
     <EmbeddedResource Include="References\SEB_3.3.2.413_x86.sebref" />
+    <EmbeddedResource Include="References\SEB_3.4.0.480_x64.sebref" />
+    <EmbeddedResource Include="References\SEB_3.4.0.480_x86.sebref" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\SafeExamBrowser.ico" />
