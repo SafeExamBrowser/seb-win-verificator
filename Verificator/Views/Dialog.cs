@@ -16,7 +16,7 @@ namespace Verificator.Views
 	{
 		internal void ShowError(string message, string title = "Error")
 		{
-			MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+			Application.Current.Dispatcher.Invoke(() => MessageBox.Show(Application.Current.MainWindow, message, title, MessageBoxButton.OK, MessageBoxImage.Error));
 		}
 
 		internal void ShowError(string message, Exception e, string title = "Error")
@@ -26,12 +26,12 @@ namespace Verificator.Views
 
 		internal void ShowMessage(string message, string title = "Information")
 		{
-			MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+			Application.Current.Dispatcher.Invoke(() => MessageBox.Show(Application.Current.MainWindow, message, title, MessageBoxButton.OK, MessageBoxImage.Information));
 		}
 
 		internal bool ShowQuestion(string message, string title = "Question")
 		{
-			return MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+			return Application.Current.Dispatcher.Invoke(() => MessageBox.Show(Application.Current.MainWindow, message, title, MessageBoxButton.YesNo, MessageBoxImage.Question)) == MessageBoxResult.Yes;
 		}
 
 		internal bool TrySelectDirectory(out string path, string title = default)

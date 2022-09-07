@@ -63,24 +63,33 @@ namespace Verificator
 			return reference != default;
 		}
 
-		internal bool TrySearchConfigurationFile(out string path)
+		internal bool TrySearchConfigurations(out ICollection<Configuration> configurations)
 		{
-			var executableDirectory = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-			var files = executableDirectory.GetFiles().Concat(executableDirectory.Parent.GetFiles());
+			var root = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).Parent;
+			var files = root.GetFiles().ToList();
 
-			path = default;
+			configurations = new List<Configuration>();
+
+			foreach (var directory in root.EnumerateDirectories("*", SearchOption.AllDirectories))
+			{
+				files.AddRange(directory.GetFiles());
+			}
 
 			foreach (var file in files)
 			{
 				if (file.Extension.Equals($".{Constants.CONFIGURATION_FILE_EXTENSION}", StringComparison.OrdinalIgnoreCase))
 				{
-					path = file.FullName;
-
-					break;
+					configurations.Add(new Configuration
+					{
+						AbsolutePath = file.FullName,
+						RelativePath = file.FullName.Replace(root.FullName + Path.DirectorySeparatorChar, "")
+					});
 				}
 			}
 
-			return path != default;
+			configurations = configurations.OrderBy(c => c.AbsolutePath).ToList();
+
+			return configurations.Any();
 		}
 	}
 }

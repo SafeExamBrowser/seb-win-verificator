@@ -29,11 +29,10 @@ namespace Verificator.Views
 		private readonly Dialog dialog;
 		private readonly Repository repository;
 
-		private string configurationPath;
-
 		private bool a;
+		private Configuration g;
 		private Cursor c;
-		private string b, d, e, f;
+		private string b, d, e, f, h;
 
 		public bool AutoStart
 		{
@@ -45,6 +44,12 @@ namespace Verificator.Views
 		{
 			get { return b; }
 			set { Set(ref b, value); }
+		}
+
+		public string ConfigurationsMessage
+		{
+			get { return h; }
+			set { Set(ref h, value); }
 		}
 
 		public Cursor Cursor
@@ -65,10 +70,16 @@ namespace Verificator.Views
 			set { Set(ref e, value); }
 		}
 
-		public string ReferencesEmptyMessage
+		public string ReferencesMessage
 		{
 			get { return f; }
 			set { Set(ref f, value); }
+		}
+
+		public Configuration SelectedConfiguration
+		{
+			get { return g; }
+			set { Set(ref g, value); }
 		}
 
 		public bool CanChangePath { get; set; }
@@ -78,6 +89,7 @@ namespace Verificator.Views
 		public bool CanVerify { get; set; }
 		public string Title => $"SEB {nameof(Verificator)} - Version {Constants.VERSION}";
 
+		public ObservableCollection<Configuration> Configurations { get; private set; }
 		public ObservableCollection<Installation> References { get; private set; }
 		public ObservableCollection<ResultItem> Results { get; private set; }
 
@@ -87,6 +99,8 @@ namespace Verificator.Views
 		public DelegateCommand GenerateReferenceCommand { get; private set; }
 		public DelegateCommand LoadReferenceCommand { get; private set; }
 		public DelegateCommand RemoveAllReferencesCommand { get; private set; }
+		public DelegateCommand SearchConfigurationsCommand { get; private set; }
+		public DelegateCommand SelectedConfigurationChangedCommand { get; private set; }
 		public DelegateCommand VerifyCommand { get; private set; }
 
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -98,6 +112,7 @@ namespace Verificator.Views
 			this.repository = repository;
 
 			ChangeLocalInstallationCommand = new DelegateCommand(ChangeLocalInstallation, () => CanChangePath);
+			Configurations = new ObservableCollection<Configuration>();
 			ContentRenderedCommand = new DelegateCommand(Initialize);
 			ExitCommand = new DelegateCommand(() => Application.Current.Shutdown());
 			GenerateReferenceCommand = new DelegateCommand(GenerateReference, () => CanGenerateReference);
@@ -105,12 +120,20 @@ namespace Verificator.Views
 			References = new ObservableCollection<Installation>();
 			RemoveAllReferencesCommand = new DelegateCommand(RemoveAllReferences, () => CanRemoveReferences);
 			Results = new ObservableCollection<ResultItem>();
+			SearchConfigurationsCommand = new DelegateCommand(SearchConfigurations);
+			SelectedConfigurationChangedCommand = new DelegateCommand(SelectedConfigurationChanged);
 			VerifyCommand = new DelegateCommand(Verify, () => CanVerify);
+		}
+
+		private void ActivateAutoStart()
+		{
+			AutoStart = true;
+			AutoStartInfo = $"Auto-start SEB (using '{SelectedConfiguration.RelativePath}')";
 		}
 
 		private void ChangeLocalInstallation()
 		{
-			if (dialog.TrySelectDirectory(out var path, "Select installation directory...") && algorithm.IsValidInstallation(path, out var platform, out var version))
+			if (dialog.TrySelectDirectory(out var path, "Please select an installation directory...") && algorithm.IsValidInstallation(path, out var platform, out var version))
 			{
 				UpdateLocalInstallation(path, platform, version);
 			}
@@ -118,6 +141,12 @@ namespace Verificator.Views
 			{
 				dialog.ShowError($"The selected directory '{path}' does not contain a Safe Exam Browser installation!");
 			}
+		}
+
+		private void DeactivateAutoStart()
+		{
+			AutoStart = false;
+			AutoStartInfo = "Auto-start SEB (using the local client or default configuration)";
 		}
 
 		private void GenerateReference()
@@ -168,7 +197,7 @@ namespace Verificator.Views
 
 			installationTask.ContinueWith((_) => referencesTask.ContinueWith((__) =>
 			{
-				SearchConfigurationFile();
+				SearchConfigurations();
 				UpdateCanVerify();
 			}));
 		}
@@ -209,17 +238,27 @@ namespace Verificator.Views
 			}
 		}
 
-		private void SearchConfigurationFile()
+		private void SearchConfigurations()
 		{
-			if (repository.TrySearchConfigurationFile(out configurationPath))
+			ConfigurationsMessage = "Searching...";
+
+			if (repository.TrySearchConfigurations(out var configurations))
 			{
-				AutoStart = true;
-				AutoStartInfo = $"Auto-start SEB (using {Path.GetFileName(configurationPath)})";
+				Application.Current.Dispatcher.Invoke(Configurations.Clear);
+				SelectedConfiguration = default;
+
+				foreach (var configuration in configurations)
+				{
+					Application.Current.Dispatcher.Invoke(() => Configurations.Add(configuration));
+				}
+
+				SelectedConfiguration = Configurations.First();
+				ActivateAutoStart();
 			}
 			else
 			{
-				AutoStart = false;
-				AutoStartInfo = "Auto-start SEB (using the local client or default configuration)";
+				ConfigurationsMessage = "Could not find any configuration files.";
+				DeactivateAutoStart();
 			}
 		}
 
@@ -242,7 +281,7 @@ namespace Verificator.Views
 
 		private void SearchReferences()
 		{
-			ReferencesEmptyMessage = "Loading...";
+			ReferencesMessage = "Loading...";
 
 			foreach (var reference in repository.SearchReferences())
 			{
@@ -253,14 +292,26 @@ namespace Verificator.Views
 			CanRemoveReferences = true;
 			LoadReferenceCommand.RaiseCanExecuteChanged();
 			RemoveAllReferencesCommand.RaiseCanExecuteChanged();
-			ReferencesEmptyMessage = "Could not find any installation references!";
+			ReferencesMessage = "Could not find any installation references!";
+		}
+
+		private void SelectedConfigurationChanged()
+		{
+			if (SelectedConfiguration != default)
+			{
+				ActivateAutoStart();
+			}
+			else
+			{
+				DeactivateAutoStart();
+			}
 		}
 
 		private void StartSafeExamBrowser()
 		{
 			var process = new Process();
 
-			process.StartInfo.Arguments = $"{'"' + configurationPath + '"'}";
+			process.StartInfo.Arguments = $"{'"' + SelectedConfiguration?.AbsolutePath + '"'}";
 			process.StartInfo.FileName = algorithm.GetMainExecutable(InstallationPath);
 			process.StartInfo.UseShellExecute = false;
 			process.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Windows);

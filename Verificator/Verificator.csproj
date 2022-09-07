@@ -108,6 +108,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Constants.cs" />
+    <Compile Include="Data\Configuration.cs" />
     <Compile Include="Data\Installation.cs" />
     <Compile Include="Data\File.cs" />
     <Compile Include="Data\Folder.cs" />

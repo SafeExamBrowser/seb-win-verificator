@@ -8,10 +8,10 @@
         xmlns:l="clr-namespace:Verificator.Data"
         xmlns:views="clr-namespace:Verificator.Views"
         mc:Ignorable="d" d:DataContext="{d:DesignInstance Type=views:WindowViewModel}"
-        Icon="../Resources/Verificator.ico" Title="{Binding Title}" Cursor="{Binding Cursor}" Height="650" Width="800" MinHeight="400" MinWidth="650" WindowStartupLocation="CenterScreen">
+        Icon="../Resources/Verificator.ico" Title="{Binding Title}" Cursor="{Binding Cursor}" Height="800" Width="800" MinHeight="600" MinWidth="650" WindowStartupLocation="CenterScreen">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="ContentRendered">
-            <i:InvokeCommandAction x:Name="ContentRenderedCommand" Command="{Binding ContentRenderedCommand}" />
+            <i:InvokeCommandAction Command="{Binding ContentRenderedCommand}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <Window.InputBindings>
@@ -20,6 +20,7 @@
         <KeyBinding Key="G" Modifiers="Ctrl" Command="{Binding GenerateReferenceCommand}" />
         <KeyBinding Key="L" Modifiers="Ctrl" Command="{Binding LoadReferenceCommand}" />
         <KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding RemoveAllReferencesCommand}" />
+        <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SearchConfigurationsCommand}" />
         <KeyBinding Key="V" Modifiers="Ctrl" Command="{Binding VerifyCommand}" />
     </Window.InputBindings>
     <Grid>
@@ -37,12 +38,12 @@
                 <MenuItem Header="_Generate reference..." Command="{Binding GenerateReferenceCommand}" InputGestureText="Ctrl+G" />
                 <MenuItem Header="_Load reference..." Command="{Binding LoadReferenceCommand}" InputGestureText="Ctrl+L" />
                 <MenuItem Header="_Remove all references..." Command="{Binding RemoveAllReferencesCommand}" InputGestureText="Ctrl+R" />
+                <MenuItem Header="_Search configuration files..." Command="{Binding SearchConfigurationsCommand}" InputGestureText="Ctrl+S" />
                 <MenuItem Header="_Verify installation..." Command="{Binding VerifyCommand}" InputGestureText="Ctrl+V" />
             </MenuItem>
         </Menu>
-        <Grid Grid.Row="1" Margin="5">
+        <Grid Grid.Row="1" Margin="5,5,5,5">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
@@ -51,9 +52,14 @@
                 <RowDefinition />
                 <RowDefinition />
                 <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Grid.Column="0" FontWeight="Bold" Padding="5,0" TextAlignment="Right" VerticalAlignment="Center">Available References:</TextBlock>
-            <ContentPresenter Grid.Row="0" Grid.Column="1" Content="{Binding}">
+            <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="Black" BorderThickness="0,0,0,1" Margin="5,0" Padding="0,0,0,2">
+                <TextBlock FontWeight="Bold" VerticalAlignment="Center">Available References</TextBlock>
+            </Border>
+            <ContentPresenter Grid.Row="1" Grid.Column="0" Content="{Binding}" Margin="5">
                 <ContentPresenter.ContentTemplate>
                     <DataTemplate>
                         <Grid>
@@ -85,7 +91,7 @@
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
                             </ListView>
-                            <TextBlock Name="ReferencesMessage" Text="{Binding ReferencesEmptyMessage}" VerticalAlignment="Center" Visibility="Collapsed" />
+                            <TextBlock Name="ReferencesMessage" Text="{Binding ReferencesMessage}" VerticalAlignment="Center" Visibility="Collapsed" />
                         </Grid>
                         <DataTemplate.Triggers>
                             <DataTrigger Binding="{Binding References.Count}" Value="0">
@@ -96,23 +102,57 @@
                     </DataTemplate>
                 </ContentPresenter.ContentTemplate>
             </ContentPresenter>
-            <WrapPanel Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center">
+            <WrapPanel Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center">
                 <Button Command="{Binding LoadReferenceCommand}" Template="{StaticResource ImageButton}" ToolTip="Load reference...">
                     <fa:ImageAwesome Icon="PlusSquareOutline" />
                 </Button>
             </WrapPanel>
-            <TextBlock Grid.Row="1" Grid.Column="0" FontWeight="Bold" Padding="5,0" TextAlignment="Right" VerticalAlignment="Center">Local Installation:</TextBlock>
-            <WrapPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+            <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="Black" BorderThickness="0,0,0,1" Margin="5,0" Padding="0,0,0,2">
+                <TextBlock FontWeight="Bold" VerticalAlignment="Center">Local Installation</TextBlock>
+            </Border>
+            <WrapPanel Grid.Row="3" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center">
                 <TextBlock Text="{Binding InstallationInfo}" />
                 <TextBlock Text="{Binding InstallationPath}" TextTrimming="CharacterEllipsis" />
             </WrapPanel>
-            <WrapPanel Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center">
+            <WrapPanel Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center">
                 <Button Command="{Binding ChangeLocalInstallationCommand}" Template="{StaticResource ImageButton}" ToolTip="Change local installation...">
                     <fa:ImageAwesome Icon="Edit" />
                 </Button>
             </WrapPanel>
-            <WrapPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="10" Orientation="Vertical">
-                <CheckBox Cursor="Hand" IsChecked="{Binding AutoStart}" Margin="0,0,0,10" ToolTip="Automatically starts the local installation after successful verification using the specified configuration file" Content="{Binding AutoStartInfo}" />
+            <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="Black" BorderThickness="0,0,0,1" Margin="5,0" Padding="0,0,0,2">
+                <TextBlock FontWeight="Bold" VerticalAlignment="Center">Configuration Files</TextBlock>
+            </Border>
+            <ContentPresenter Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Content="{Binding}" Margin="5">
+                <ContentPresenter.ContentTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <ListView Name="ConfigurationsView" BorderThickness="0" ItemsSource="{Binding Configurations}" MaxHeight="160" SelectedItem="{Binding SelectedConfiguration}" SelectionMode="Single">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="SelectionChanged">
+                                        <i:InvokeCommandAction Command="{Binding SelectedConfigurationChangedCommand}" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding RelativePath}" ToolTip="{Binding AbsolutePath}" />
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                            <TextBlock Name="ConfigurationsMessage" Text="{Binding ConfigurationsMessage}" VerticalAlignment="Center" Visibility="Collapsed" />
+                        </Grid>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Configurations.Count}" Value="0">
+                                <Setter TargetName="ConfigurationsView" Property="Visibility" Value="Collapsed" />
+                                <Setter TargetName="ConfigurationsMessage" Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ContentPresenter.ContentTemplate>
+            </ContentPresenter>
+            <WrapPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="5" Orientation="Vertical">
+                <CheckBox Cursor="Hand" IsChecked="{Binding AutoStart}" Margin="0,10" ToolTip="Automatically starts the local installation with the specified configuration file if the verification succeeds">
+                    <TextBlock Text="{Binding AutoStartInfo}" />
+                </CheckBox>
                 <WrapPanel HorizontalAlignment="Center" Margin="10">
                     <Button Command="{Binding VerifyCommand}" Template="{StaticResource Button}">Verify</Button>
                 </WrapPanel>
