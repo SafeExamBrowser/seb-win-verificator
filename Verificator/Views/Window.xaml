@@ -13,6 +13,9 @@
         <i:EventTrigger EventName="ContentRendered">
             <i:InvokeCommandAction Command="{Binding ContentRenderedCommand}" />
         </i:EventTrigger>
+        <i:EventTrigger EventName="Closing">
+            <i:InvokeCommandAction Command="{Binding WindowClosingCommand}" />
+        </i:EventTrigger>
     </i:Interaction.Triggers>
     <Window.InputBindings>
         <KeyBinding Key="C" Modifiers="Ctrl" Command="{Binding ChangeLocalInstallationCommand}" />
@@ -27,6 +30,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Menu Grid.Row="0" Background="White" Height="20" VerticalAlignment="Top">
@@ -126,7 +130,7 @@
                 <ContentPresenter.ContentTemplate>
                     <DataTemplate>
                         <Grid>
-                            <ListView Name="ConfigurationsView" BorderThickness="0" ItemsSource="{Binding Configurations}" MaxHeight="160" SelectedItem="{Binding SelectedConfiguration}" SelectionMode="Single">
+                            <ListView Name="ConfigurationsView" BorderThickness="0" ItemsSource="{Binding Configurations}" MaxHeight="120" SelectedItem="{Binding SelectedConfiguration}" SelectionMode="Single">
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="SelectionChanged">
                                         <i:InvokeCommandAction Command="{Binding SelectedConfigurationChangedCommand}" />
@@ -159,7 +163,7 @@
             </WrapPanel>
         </Grid>
         <Grid Grid.Row="2">
-            <ListView Name="ResultListView" Background="WhiteSmoke" BorderThickness="0" ItemsSource="{Binding Results}" HorizontalContentAlignment="Stretch">
+            <ListView Background="WhiteSmoke" BorderThickness="0" ItemsSource="{Binding Results}" HorizontalContentAlignment="Stretch">
                 <ListView.Resources>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -243,6 +247,39 @@
                     </GridView>
                 </ListView.View>
             </ListView>
+        </Grid>
+        <Grid Grid.Row="3" Margin="5,5,5,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="Black" BorderThickness="0,0,0,1" Margin="5,0" Padding="0,0,0,2">
+                <TextBlock FontWeight="Bold" VerticalAlignment="Center">Log</TextBlock>
+            </Border>
+            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" Margin="5" VerticalScrollBarVisibility="Auto">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger SourceObject="{Binding Log}" EventName="CollectionChanged">
+                        <i:CallMethodAction MethodName="ScrollToBottom" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <ListView BorderThickness="0" ItemsSource="{Binding Log}" IsEnabled="False">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="Padding" Value="0" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock FontFamily="Consolas" Foreground="{Binding Color}" Text="{Binding Text}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </ScrollViewer>
         </Grid>
     </Grid>
 </Window>

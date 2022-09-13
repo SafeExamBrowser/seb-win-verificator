@@ -14,14 +14,24 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Verificator.Data;
+using Verificator.Logging;
 using File = Verificator.Data.File;
 
 namespace Verificator
 {
 	internal class Algorithm
 	{
+		private readonly Logger logger;
+
+		internal Algorithm(Logger logger)
+		{
+			this.logger = logger;
+		}
+
 		internal Installation GenerateReference(string path)
 		{
+			logger.Debug($"Generating reference for '{path}'...");
+
 			var root = new DirectoryInfo(path);
 			var reference = new Installation
 			{
@@ -30,6 +40,8 @@ namespace Verificator
 				Root = AnalyzeDirectory(root, root.FullName),
 				Version = GetVersion(path)
 			};
+
+			logger.Info($"Successfully generated reference for SEB {reference.Version} ({reference.Platform}).");
 
 			return reference;
 		}
@@ -48,6 +60,8 @@ namespace Verificator
 			{
 				platform = GetPlatform(path);
 				version = GetVersion(path);
+
+				logger.Info($"Found SEB {version} ({platform}) installed at '{path}'.");
 			}
 
 			return platform != default && version != default;
@@ -62,6 +76,8 @@ namespace Verificator
 			var programFilesX64 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
 			var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
 
+			logger.Debug("Searching local installation...");
+
 			foreach (var directory in Directory.GetDirectories(programFilesX64).Concat(Directory.GetDirectories(programFilesX86)))
 			{
 				if (IsValidInstallation(directory, out platform, out version))
@@ -70,6 +86,11 @@ namespace Verificator
 
 					break;
 				}
+			}
+
+			if (path == default)
+			{
+				logger.Warn("Could not find a local installation!");
 			}
 
 			return path != default;
@@ -86,10 +107,13 @@ namespace Verificator
 				var installation = new Installation();
 				var root = AnalyzeDirectory(new DirectoryInfo(installationPath), installationPath);
 
+				logger.Info($"Verifying SEB {version} ({platform}) installed at '{installationPath}'...");
+
 				return Compare(root, reference.Root).Skip(1);
 			}
 			else
 			{
+				logger.Error($"No reference found for installed version {version} ({platform})!");
 				throw new InvalidOperationException($"No reference found for installed version {version} ({platform})!");
 			}
 		}
@@ -97,6 +121,8 @@ namespace Verificator
 		private Folder AnalyzeDirectory(DirectoryInfo directory, string rootPath)
 		{
 			var folder = new Folder { Path = directory.FullName.Replace(rootPath, "") };
+
+			logger.Debug($"Analyzing directory '{directory.FullName}'...");
 
 			foreach (var subdirectory in directory.GetDirectories())
 			{
@@ -108,6 +134,8 @@ namespace Verificator
 				var checksum = default(string);
 				var signature = default(string);
 				var versionInfo = FileVersionInfo.GetVersionInfo(file.FullName);
+
+				logger.Debug($"Analyzing file '{file.FullName}'...");
 
 				using (var stream = System.IO.File.OpenRead(file.FullName))
 				using (var algorithm = new SHA256Managed())
@@ -141,11 +169,17 @@ namespace Verificator
 			var referenceFolders = new List<Folder>(reference?.Folders ?? Enumerable.Empty<Folder>());
 			var referenceFiles = new List<File>(reference?.Files ?? Enumerable.Empty<File>());
 			var status = installed == default ? ResultItemStatus.Missing : (reference == default ? ResultItemStatus.Added : ResultItemStatus.OK);
+			var remarks = BuildRemarks(ResultItemType.Folder, status);
+
+			if (!string.IsNullOrEmpty(installed?.Path) || !string.IsNullOrEmpty(reference?.Path))
+			{
+				logger.Debug($"Compared {installed?.Path ?? reference?.Path} -> {(status == ResultItemStatus.OK ? status.ToString() : remarks)}");
+			}
 
 			yield return new ResultItem
 			{
 				Path = installed?.Path ?? reference.Path,
-				Remarks = BuildRemarks(ResultItemType.Folder, status),
+				Remarks = remarks,
 				Status = status,
 				Type = ResultItemType.Folder
 			};
@@ -223,10 +257,14 @@ namespace Verificator
 				}
 			}
 
+			var remarks = BuildRemarks(ResultItemType.File, status, details);
+
+			logger.Debug($"Compared {installed?.Path ?? reference?.Path} -> {(status == ResultItemStatus.OK ? status.ToString() : remarks)}");
+
 			return new ResultItem
 			{
 				Path = installed?.Path ?? reference.Path,
-				Remarks = BuildRemarks(ResultItemType.File, status, details),
+				Remarks = remarks,
 				Status = status,
 				Type = ResultItemType.File
 			};

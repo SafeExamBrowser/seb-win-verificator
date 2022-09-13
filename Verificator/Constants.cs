@@ -6,6 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+using System;
+using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 
 namespace Verificator
@@ -15,6 +18,8 @@ namespace Verificator
 		internal const string CONFIGURATION_FILE_EXTENSION = "seb";
 		internal const string REFERENCE_FILE_EXTENSION = "sebref";
 
+		internal static readonly string BUILD = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion;
+		internal static readonly string LOG_FILE = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Logs", $"{DateTime.Today:yyyy-MM-dd}.log");
 		internal static readonly string VERSION = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 	}
 }

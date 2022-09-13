@@ -14,20 +14,23 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using Prism.Commands;
 using Verificator.Data;
+using Verificator.Logging;
 
 namespace Verificator.Views
 {
-	internal class WindowViewModel : INotifyPropertyChanged
+	internal class WindowViewModel : ILogObserver, INotifyPropertyChanged
 	{
 		private readonly Algorithm algorithm;
 		private readonly Dialog dialog;
+		private readonly Logger logger;
 		private readonly Repository repository;
+		private readonly SystemInfo systemInfo;
 
 		private bool a;
 		private Configuration g;
@@ -90,6 +93,7 @@ namespace Verificator.Views
 		public string Title => $"SEB {nameof(Verificator)} - Version {Constants.VERSION}";
 
 		public ObservableCollection<Configuration> Configurations { get; private set; }
+		public ObservableCollection<LogEntry> Log { get; private set; }
 		public ObservableCollection<Installation> References { get; private set; }
 		public ObservableCollection<ResultItem> Results { get; private set; }
 
@@ -102,14 +106,17 @@ namespace Verificator.Views
 		public DelegateCommand SearchConfigurationsCommand { get; private set; }
 		public DelegateCommand SelectedConfigurationChangedCommand { get; private set; }
 		public DelegateCommand VerifyCommand { get; private set; }
+		public DelegateCommand WindowClosingCommand { get; private set; }
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		public WindowViewModel(Algorithm algorithm, Dialog dialog, Repository repository)
+		public WindowViewModel(Algorithm algorithm, Dialog dialog, Logger logger, Repository repository, SystemInfo systemInfo)
 		{
 			this.algorithm = algorithm;
 			this.dialog = dialog;
+			this.logger = logger;
 			this.repository = repository;
+			this.systemInfo = systemInfo;
 
 			ChangeLocalInstallationCommand = new DelegateCommand(ChangeLocalInstallation, () => CanChangePath);
 			Configurations = new ObservableCollection<Configuration>();
@@ -117,12 +124,64 @@ namespace Verificator.Views
 			ExitCommand = new DelegateCommand(() => Application.Current.Shutdown());
 			GenerateReferenceCommand = new DelegateCommand(GenerateReference, () => CanGenerateReference);
 			LoadReferenceCommand = new DelegateCommand(LoadReference, () => CanLoadReference);
+			Log = new ObservableCollection<LogEntry>();
 			References = new ObservableCollection<Installation>();
 			RemoveAllReferencesCommand = new DelegateCommand(RemoveAllReferences, () => CanRemoveReferences);
 			Results = new ObservableCollection<ResultItem>();
 			SearchConfigurationsCommand = new DelegateCommand(SearchConfigurations);
 			SelectedConfigurationChangedCommand = new DelegateCommand(SelectedConfigurationChanged);
 			VerifyCommand = new DelegateCommand(Verify, () => CanVerify);
+			WindowClosingCommand = new DelegateCommand(LogShutdownInformation);
+		}
+
+		public void Notify(LogContent content)
+		{
+			if (content is LogMessage message)
+			{
+				var severity = message.Severity.ToString().ToUpper();
+				var threadId = message.ThreadInfo.Id < 10 ? $"0{message.ThreadInfo.Id}" : message.ThreadInfo.Id.ToString();
+				var threadName = message.ThreadInfo.HasName ? ": " + message.ThreadInfo.Name : string.Empty;
+				var threadInfo = $"[{threadId}{threadName}]";
+				var time = message.DateTime.ToString("HH:mm:ss.fff");
+
+				Application.Current.Dispatcher.Invoke(() => Log.Add(new LogEntry
+				{
+					Color = GetBrushFor(message.Severity),
+					Text = $"{time} {threadInfo} - {severity}: {message.Message}"
+				}));
+			}
+
+			if (content is LogText text)
+			{
+				Application.Current.Dispatcher.Invoke(() => Log.Add(new LogEntry { Color = GetBrushFor(text.Text), Text = text.Text }));
+			}
+		}
+
+		private Brush GetBrushFor(LogLevel severity)
+		{
+			switch (severity)
+			{
+				case LogLevel.Debug:
+					return Brushes.DarkGray;
+				case LogLevel.Error:
+					return Brushes.Red;
+				case LogLevel.Warning:
+					return Brushes.DarkOrange;
+				default:
+					return Brushes.Black;
+			}
+		}
+
+		private Brush GetBrushFor(string text)
+		{
+			if (text.StartsWith("#"))
+			{
+				return Brushes.Green;
+			}
+			else
+			{
+				return Brushes.Black;
+			}
 		}
 
 		private void ActivateAutoStart()
@@ -133,13 +192,20 @@ namespace Verificator.Views
 
 		private void ChangeLocalInstallation()
 		{
+			logger.Debug("Attempting to change local installation...");
+
 			if (dialog.TrySelectDirectory(out var path, "Please select an installation directory...") && algorithm.IsValidInstallation(path, out var platform, out var version))
 			{
 				UpdateLocalInstallation(path, platform, version);
 			}
 			else if (path != default)
 			{
+				logger.Error($"The selected directory '{path}' does not contain a Safe Exam Browser installation!");
 				dialog.ShowError($"The selected directory '{path}' does not contain a Safe Exam Browser installation!");
+			}
+			else
+			{
+				logger.Debug("User aborted when prompted to select installation directory.");
 			}
 		}
 
@@ -176,22 +242,32 @@ namespace Verificator.Views
 							path = repository.Save(reference, path);
 							dialog.ShowMessage($"Reference successfully saved as '{path}'.");
 						}
+						else
+						{
+							logger.Debug("User aborted when prompted to save reference.");
+						}
 					});
 
 					UpdateCanVerify();
-					Cursor = Cursors.Arrow;
 				}
 				catch (Exception e)
 				{
 					Application.Current.Dispatcher.Invoke(() => progress.Close());
-					Cursor = Cursors.Arrow;
+					logger.Error($"Failed to generate reference for '{InstallationPath}'!", e);
 					dialog.ShowError($"Failed to generate reference for '{InstallationPath}'!", e);
+				}
+				finally
+				{
+					Cursor = Cursors.Arrow;
 				}
 			});
 		}
 
 		private void Initialize()
 		{
+			InitializeLogging();
+			LogStartupInformation();
+
 			var installationTask = Task.Run(new Action(SearchInstallation));
 			var referencesTask = Task.Run(new Action(SearchReferences));
 
@@ -202,6 +278,16 @@ namespace Verificator.Views
 			}));
 		}
 
+		private void InitializeLogging()
+		{
+			var logFileWriter = new LogFileWriter(new LogContentFormatter(), Constants.LOG_FILE);
+
+			logFileWriter.Initialize();
+			logger.LogLevel = LogLevel.Debug;
+			logger.Subscribe(logFileWriter);
+			logger.Subscribe(this);
+		}
+
 		private void LoadReference()
 		{
 			try
@@ -210,6 +296,7 @@ namespace Verificator.Views
 				{
 					if (References.Any(r => r.Version == reference.Version && r.Platform == reference.Platform))
 					{
+						logger.Error($"A reference for version {reference.Version} ({reference.Platform}) has already been loaded!");
 						dialog.ShowError($"A reference for version {reference.Version} ({reference.Platform}) has already been loaded!");
 					}
 					else
@@ -222,11 +309,34 @@ namespace Verificator.Views
 				{
 					dialog.ShowError($"The selected file '{path}' does not contain a valid Safe Exam Browser reference!");
 				}
+				else
+				{
+					logger.Debug("User aborted when prompted to select reference file.");
+				}
 			}
 			catch (Exception e)
 			{
-				dialog.ShowError($"Failed to load reference file!", e);
+				logger.Error("Failed to load reference file!", e);
+				dialog.ShowError("Failed to load reference file!", e);
 			}
+		}
+
+		private void LogStartupInformation()
+		{
+			logger.Log($"                                 SEB {nameof(Verificator)}, Version {Constants.VERSION}, Build {Constants.BUILD}");
+			logger.Log($"                    Copyright © 2022 ETH Zürich, Educational Development and Technology (LET)");
+			logger.Log(string.Empty);
+			logger.Log($"# Application started at {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}");
+			logger.Log($"# Running on {systemInfo.OperatingSystemInfo} with user '{Environment.UserName}'");
+			logger.Log($"# Computer '{systemInfo.Name}' is a {systemInfo.Model} manufactured by {systemInfo.Manufacturer}");
+			logger.Log(string.Empty);
+		}
+
+		private void LogShutdownInformation()
+		{
+			logger.Log(string.Empty);
+			logger.Log($"# Application terminated at {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}");
+			logger.Log(string.Empty);
 		}
 
 		private void RemoveAllReferences()
@@ -316,6 +426,8 @@ namespace Verificator.Views
 			process.StartInfo.UseShellExecute = false;
 			process.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
 
+			logger.Info($"Starting SEB with {(SelectedConfiguration == default ? "local client or default configuration" : $"'{SelectedConfiguration.AbsolutePath}'")}.");
+
 			process.Start();
 		}
 
@@ -337,6 +449,8 @@ namespace Verificator.Views
 		{
 			var progress = new Progress { Cursor = Cursors.Wait, Owner = Application.Current.MainWindow };
 
+			logger.Info("Starting verification...");
+
 			Task.Run(() =>
 			{
 				Cursor = Cursors.Wait;
@@ -346,7 +460,7 @@ namespace Verificator.Views
 
 				try
 				{
-					var results = algorithm.Verify(InstallationPath, References);
+					var results = algorithm.Verify(InstallationPath, References).ToList();
 					var tampered = new List<ResultItem>();
 
 					foreach (var item in results)
@@ -357,9 +471,6 @@ namespace Verificator.Views
 						{
 							tampered.Add(item);
 						}
-
-						// Looks like we need to let the UI thread catch up before we can continue...
-						Thread.Sleep(1);
 					}
 
 					Application.Current.Dispatcher.Invoke(() => progress.Close());
@@ -367,6 +478,7 @@ namespace Verificator.Views
 
 					if (tampered.Any())
 					{
+						logger.Error($"Verification finished, {tampered.Count} of {results.Count()} items are not okay!");
 						dialog.ShowError($"Verification finished, {tampered.Count} of {results.Count()} items are not okay!");
 					}
 					else if (AutoStart)
@@ -376,6 +488,7 @@ namespace Verificator.Views
 					}
 					else
 					{
+						logger.Info($"Verification finished, all {results.Count()} items are okay.");
 						dialog.ShowMessage($"Verification finished, all {results.Count()} items are okay.");
 					}
 				}
@@ -383,6 +496,7 @@ namespace Verificator.Views
 				{
 					Application.Current.Dispatcher.Invoke(() => progress.Close());
 					Cursor = Cursors.Arrow;
+					logger.Error($"Failed to verify '{InstallationPath}'!", e);
 					dialog.ShowError($"Failed to verify '{InstallationPath}'!", e);
 				}
 			});

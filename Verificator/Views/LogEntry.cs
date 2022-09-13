@@ -6,19 +6,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-using Verificator.Data;
-using Verificator.Logging;
+using System.Windows.Media;
 
 namespace Verificator.Views
 {
-	public partial class Window : System.Windows.Window
+	internal class LogEntry
 	{
-		public Window()
-		{
-			var logger = new Logger();
-
-			InitializeComponent();
-			DataContext = new WindowViewModel(new Algorithm(logger), new Dialog(), logger, new Repository(logger), new SystemInfo());
-		}
+		public string Text { get; set; }
+		public Brush Color { get; set; }
 	}
 }

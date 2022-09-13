@@ -54,6 +54,9 @@
   <PropertyGroup>
     <ApplicationIcon>Resources\Verificator.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CustomMarshalers" />
     <Reference Include="FontAwesome.WPF, Version=4.7.0.37774, Culture=neutral, PublicKeyToken=0758b07a11a4f466, processorArchitecture=MSIL">
@@ -76,6 +79,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
@@ -112,13 +116,25 @@
     <Compile Include="Data\Installation.cs" />
     <Compile Include="Data\File.cs" />
     <Compile Include="Data\Folder.cs" />
+    <Compile Include="Data\OperatingSystem.cs" />
     <Compile Include="Data\Platform.cs" />
+    <Compile Include="Data\SystemInfo.cs" />
+    <Compile Include="Logging\ILogObserver.cs" />
+    <Compile Include="Logging\LogContent.cs" />
+    <Compile Include="Logging\LogContentFormatter.cs" />
+    <Compile Include="Logging\LogFileWriter.cs" />
+    <Compile Include="Logging\Logger.cs" />
+    <Compile Include="Logging\LogLevel.cs" />
+    <Compile Include="Logging\LogMessage.cs" />
+    <Compile Include="Logging\LogText.cs" />
+    <Compile Include="Logging\ThreadInfo.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="Data\ResultItem.cs" />
     <Compile Include="Data\ResultItemStatus.cs" />
     <Compile Include="Data\ResultItemType.cs" />
     <Compile Include="Algorithm.cs" />
     <Compile Include="Views\Dialog.cs" />
+    <Compile Include="Views\LogEntry.cs" />
     <Compile Include="Views\Progress.xaml.cs">
       <DependentUpon>Progress.xaml</DependentUpon>
     </Compile>
@@ -137,6 +153,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="app.manifest" />
     <None Include="packages.config" />
     <EmbeddedResource Include="References\SEB_3.2.0.338_x64.sebref" />
     <EmbeddedResource Include="References\SEB_3.2.0.338_x86.sebref" />
