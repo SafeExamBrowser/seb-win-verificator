@@ -158,7 +158,18 @@
                     <TextBlock Text="{Binding AutoStartInfo}" />
                 </CheckBox>
                 <WrapPanel HorizontalAlignment="Center" Margin="10">
-                    <Button Command="{Binding VerifyCommand}" Template="{StaticResource Button}">Verify</Button>
+                    <Button Command="{Binding VerifyCommand}" Template="{StaticResource Button}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsEnabled}" Value="True">
+                                        <Setter Property="FocusManager.FocusedElement" Value="{Binding RelativeSource={RelativeSource Self}}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        Verify
+                    </Button>
                 </WrapPanel>
             </WrapPanel>
         </Grid>
