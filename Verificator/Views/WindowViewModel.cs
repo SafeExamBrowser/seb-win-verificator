@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2022 ETH Zürich, Educational Development and Technology (LET)
+ * Copyright (c) 2023 ETH Zürich, Educational Development and Technology (LET)
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -324,7 +324,7 @@ namespace Verificator.Views
 		private void LogStartupInformation()
 		{
 			logger.Log($"                                 SEB {nameof(Verificator)}, Version {Constants.VERSION}, Build {Constants.BUILD}");
-			logger.Log($"                    Copyright © 2022 ETH Zürich, Educational Development and Technology (LET)");
+			logger.Log($"                    Copyright © 2023 ETH Zürich, Educational Development and Technology (LET)");
 			logger.Log(string.Empty);
 			logger.Log($"# Application started at {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}");
 			logger.Log($"# Running on {systemInfo.OperatingSystemInfo} with user '{Environment.UserName}'");
