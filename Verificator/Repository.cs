@@ -56,8 +56,9 @@ namespace Verificator
 				if (resource.EndsWith(Constants.REFERENCE_FILE_EXTENSION))
 				{
 					using (var stream = assembly.GetManifestResourceStream(resource))
+					using (var reader = XmlReader.Create(stream))
 					{
-						var reference = serializer.Deserialize(stream) as Installation;
+						var reference = serializer.Deserialize(reader) as Installation;
 
 						logger.Info($"Found reference for SEB {reference.Version} ({reference.Platform}).");
 
@@ -74,8 +75,9 @@ namespace Verificator
 			logger.Debug("Attempting to load reference...");
 
 			using (var stream = File.OpenRead(path))
+			using (var reader = XmlReader.Create(stream))
 			{
-				reference = serializer.Deserialize(stream) as Installation;
+				reference = serializer.Deserialize(reader) as Installation;
 			}
 
 			if (reference != default)
