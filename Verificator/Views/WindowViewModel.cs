@@ -324,7 +324,7 @@ namespace Verificator.Views
 		private void LogStartupInformation()
 		{
 			logger.Log($"                                 SEB {nameof(Verificator)}, Version {Constants.VERSION}, Build {Constants.BUILD}");
-			logger.Log($"                    Copyright © 2024 ETH Zürich, IT Services");
+			logger.Log($"                                     Copyright © 2024 ETH Zürich, IT Services");
 			logger.Log(string.Empty);
 			logger.Log($"# Application started at {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}");
 			logger.Log($"# Running on {systemInfo.OperatingSystemInfo} with user '{Environment.UserName}'");

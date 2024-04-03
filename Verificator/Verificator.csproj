@@ -172,6 +172,8 @@
     <EmbeddedResource Include="References\SEB_3.6.0.633_x64.sebref" />
     <EmbeddedResource Include="References\SEB_3.6.0.633_x86.sebref" />
     <None Include="packages.config" />
+    <EmbeddedResource Include="References\SEB_3.7.0.682_x64.sebref" />
+    <EmbeddedResource Include="References\SEB_3.7.0.682_x86.sebref" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
