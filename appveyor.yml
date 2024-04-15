@@ -16,7 +16,7 @@ install:
  - appveyor DownloadFile "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
 before_build:
  - nuget restore
- - set PATH=C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin;%PATH%
+# - set PATH=C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin;%PATH%
  - echo %PATH%
 build_script:
  - msbuild /verbosity:minimal /property:langversion=latest "Verificator.sln"
