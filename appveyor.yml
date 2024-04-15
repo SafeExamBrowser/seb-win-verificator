@@ -15,9 +15,11 @@ assembly_info:
 install:
  - appveyor DownloadFile "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
 # - set PATH=%ProgramFiles%\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin;%PATH%
+ - reg query HKCU\Environment
+ - reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+ - echo %PATH%
 before_build:
  - nuget restore
- - echo %PATH%
 build_script:
  - msbuild /verbosity:minimal /property:langversion=latest "Verificator.sln"
 test: off
