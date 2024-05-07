@@ -30,7 +30,7 @@ The application can automatically start the local SEB installation once the veri
 
 | Aspect            | Status                                                                                                                | Details                                                         |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Development Build | ![Development Build Status](https://sebdev-let.ethz.ch/api/projects/status/pptmm2tt43scnj5w?svg=true)                 | https://sebdev-let.ethz.ch/project/appveyor/seb-win-verificator |
+| Development Build | ![Development Build Status](https://sebdev.ethz.ch/api/projects/status/pptmm2tt43scnj5w?svg=true)                     | https://sebdev.ethz.ch/project/appveyor/seb-win-verificator     |
 | Issue Status      | ![GitHub Issues](https://img.shields.io/github/issues/safeexambrowser/seb-win-verificator?logo=github)                | https://github.com/SafeExamBrowser/seb-win-verificator/issues   |
 | Downloads         | ![GitHub All Releases](https://img.shields.io/github/downloads/safeexambrowser/seb-win-verificator/total?logo=github) | https://github.com/SafeExamBrowser/seb-win-verificator/releases |
 | Development       | ![GitHub Last Commit](https://img.shields.io/github/last-commit/safeexambrowser/seb-win-verificator?logo=github)      | n/a                                                             |
