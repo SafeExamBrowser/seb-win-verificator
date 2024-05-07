@@ -25,8 +25,8 @@ The application can automatically start the local SEB installation once the veri
 
 ## Project Status
 
-**_DISCLAIMER_**\
-**The builds linked below are for testing purposes only.** They may be unstable and should thus _never_ be used in a production environment! Always use the latest, official release version.
+> [!WARNING]
+> **The builds linked below are for testing purposes only.** They may be unstable and should thus _never_ be used in a production environment! Always use the latest, official release version.
 
 | Aspect            | Status                                                                                                                | Details                                                         |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
