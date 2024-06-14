@@ -10,7 +10,7 @@ the candidate to download and execute the SEB Verificator under your supervision
 
 The application requires the prerequisites listed below in order to work correctly. These should already be present on a system which has SEB installed.
 
-* .NET Framework 4.7.2 Runtime: https://dotnet.microsoft.com/download/dotnet-framework/net472
+* .NET Framework 4.8 Runtime: https://dotnet.microsoft.com/download/dotnet-framework/net48
 
 ## Usage
 
