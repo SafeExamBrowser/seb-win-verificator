@@ -9,7 +9,7 @@ using System.Windows;
 [assembly: AssemblyDescription("Utility to verify the integrity of a Safe Exam Browser installation.")]
 [assembly: AssemblyCompany("ETH Zürich")]
 [assembly: AssemblyProduct("Verificator")]
-[assembly: AssemblyCopyright("Copyright © 2024 ETH Zürich, IT Services")]
+[assembly: AssemblyCopyright("Copyright © 2025 ETH Zürich, IT Services")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
