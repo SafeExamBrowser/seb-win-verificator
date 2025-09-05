@@ -180,6 +180,8 @@
     <EmbeddedResource Include="References\SEB_3.8.0.742_x86.sebref" />
     <EmbeddedResource Include="References\SEB_3.9.0.787_x64.sebref" />
     <EmbeddedResource Include="References\SEB_3.9.0.787_x86.sebref" />
+    <EmbeddedResource Include="References\SEB_3.10.0.826_x86.sebref" />
+    <EmbeddedResource Include="References\SEB_3.10.0.826_x64.sebref" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
