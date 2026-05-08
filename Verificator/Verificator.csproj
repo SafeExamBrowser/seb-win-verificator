@@ -155,6 +155,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="app.manifest" />
+    <None Include="packages.config" />
     <EmbeddedResource Include="References\SEB_3.2.0.338_x64.sebref" />
     <EmbeddedResource Include="References\SEB_3.2.0.338_x86.sebref" />
     <EmbeddedResource Include="References\SEB_3.3.0.354_x64.sebref" />
@@ -171,7 +172,6 @@
     <EmbeddedResource Include="References\SEB_3.5.0.544_x86.sebref" />
     <EmbeddedResource Include="References\SEB_3.6.0.633_x64.sebref" />
     <EmbeddedResource Include="References\SEB_3.6.0.633_x86.sebref" />
-    <None Include="packages.config" />
     <EmbeddedResource Include="References\SEB_3.7.0.682_x64.sebref" />
     <EmbeddedResource Include="References\SEB_3.7.0.682_x86.sebref" />
     <EmbeddedResource Include="References\SEB_3.7.1.704_x64.sebref" />
@@ -180,10 +180,12 @@
     <EmbeddedResource Include="References\SEB_3.8.0.742_x86.sebref" />
     <EmbeddedResource Include="References\SEB_3.9.0.787_x64.sebref" />
     <EmbeddedResource Include="References\SEB_3.9.0.787_x86.sebref" />
-    <EmbeddedResource Include="References\SEB_3.10.0.826_x86.sebref" />
     <EmbeddedResource Include="References\SEB_3.10.0.826_x64.sebref" />
+    <EmbeddedResource Include="References\SEB_3.10.0.826_x86.sebref" />
     <EmbeddedResource Include="References\SEB_3.10.1.864_x64.sebref" />
     <EmbeddedResource Include="References\SEB_3.10.1.864_x86.sebref" />
+    <EmbeddedResource Include="References\SEB_3.10.2.904_x64.sebref" />
+    <EmbeddedResource Include="References\SEB_3.10.2.904_x86.sebref" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
